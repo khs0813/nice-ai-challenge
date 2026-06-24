@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:batch_monitor;MODE=Oracle;DATABASE_TO_UPPER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:/db/test-schema.sql
+      data-locations: classpath:/db/test-data.sql
+  h2:
+    console:
+      enabled: true
+
+monitor:
+  security:
+    admin:
+      username: ${MONITOR_ADMIN_USERNAME:admin}
+      # test profile only. Password: admin1234
+      password-hash: ${MONITOR_ADMIN_PASSWORD_HASH:$2a$10$3iopYw0S7I59mR9p.uwVQuIfRYcVnAmXwmSf4E3z12qgCKtIXQkQW}
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:test-jasypt-password}
+
+batch:
+  monitor:
+    parameter-schema: legacy

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(${title}, ~{::content})}">
+<body>
+<div th:fragment="content">
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2 th:text="${title}">전체 배치 실행</h2>
+                <p><strong th:text="${page.totalCount}">0</strong>건이 조회되었습니다.</p>
+            </div>
+            <a class="btn btn-secondary btn-sm" th:href="@{/dashboard}">대시보드</a>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>실행 번호</th>
+                    <th>배치 번호</th>
+                    <th>배치명</th>
+                    <th>상태</th>
+                    <th>종료 결과</th>
+                    <th>시작일시</th>
+                    <th>종료일시</th>
+                    <th>소요 시간</th>
+                    <th>최종 변경일시</th>
+                    <th>상세</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="job : ${page.items}">
+                    <td><a th:href="@{/jobs/{id}(id=${job.jobExecutionId})}" th:text="${job.jobExecutionId}">1001</a></td>
+                    <td th:text="${job.jobInstanceId}">1</td>
+                    <td class="text-strong" th:text="${job.jobName}">정산배치</td>
+                    <td><span class="status-badge" th:classappend="${job.statusBadgeClass}" th:text="${job.statusLabel}">성공</span></td>
+                    <td th:text="${job.exitCodeLabel}">정상 종료</td>
+                    <td th:text="${job.startTimeText}">-</td>
+                    <td th:text="${job.endTimeText}">-</td>
+                    <td th:text="${job.durationText}">-</td>
+                    <td th:text="${job.lastUpdatedText}">-</td>
+                    <td><a class="btn btn-outline btn-xs" th:href="@{/jobs/{id}(id=${job.jobExecutionId})}">상세</a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(page.items)}">
+                    <td colspan="10" class="empty-cell">조회된 배치 실행 이력이 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${page.totalCount > 0}">
+            <a th:classappend="${!page.hasPrevious} ? ' disabled' : ''"
+               th:href="@{/dashboard/jobs(type=${type}, page=${page.page - 1}, size=${page.size})}">이전</a>
+            <a th:each="p : ${page.pageNumbers}"
+               th:classappend="${p == page.page} ? ' active' : ''"
+               th:text="${p}"
+               th:href="@{/dashboard/jobs(type=${type}, page=${p}, size=${page.size})}">1</a>
+            <a th:classappend="${!page.hasNext} ? ' disabled' : ''"
+               th:href="@{/dashboard/jobs(type=${type}, page=${page.page + 1}, size=${page.size})}">다음</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>

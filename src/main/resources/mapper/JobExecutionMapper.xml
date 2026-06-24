@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.batchmonitor.mapper.JobExecutionMapper">
+
+    <sql id="BaseJobExecutionColumns">
+        je.JOB_EXECUTION_ID,
+        je.VERSION,
+        je.JOB_INSTANCE_ID,
+        ji.JOB_NAME,
+        je.CREATE_TIME,
+        je.START_TIME,
+        je.END_TIME,
+        je.STATUS,
+        je.EXIT_CODE,
+        je.EXIT_MESSAGE,
+        je.LAST_UPDATED
+    </sql>
+
+    <sql id="JobExecutionConditions">
+        <if test="jobExecutionId != null">
+            AND je.JOB_EXECUTION_ID = #{jobExecutionId}
+        </if>
+        <if test="jobName != null and jobName != ''">
+            AND ji.JOB_NAME LIKE '%' || #{jobName} || '%'
+        </if>
+        <if test="status != null and status != ''">
+            AND je.STATUS = #{status}
+        </if>
+        <if test="exitCode != null and exitCode != ''">
+            AND je.EXIT_CODE = #{exitCode}
+        </if>
+        <if test="startDateTime != null">
+            AND je.START_TIME &gt;= #{startDateTime}
+        </if>
+        <if test="endDateTime != null">
+            AND je.START_TIME &lt; #{endDateTime}
+        </if>
+    </sql>
+
+    <select id="findJobExecutions" parameterType="com.example.batchmonitor.dto.SearchConditionDto"
+            resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE 1 = 1
+        <include refid="JobExecutionConditions"/>
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="countJobExecutions" parameterType="com.example.batchmonitor.dto.SearchConditionDto" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE 1 = 1
+        <include refid="JobExecutionConditions"/>
+    </select>
+
+    <select id="findFailedJobExecutions" parameterType="com.example.batchmonitor.dto.SearchConditionDto"
+            resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE (je.STATUS = 'FAILED' OR je.EXIT_CODE = 'FAILED')
+        <include refid="JobExecutionConditions"/>
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="countFailedJobExecutions" parameterType="com.example.batchmonitor.dto.SearchConditionDto" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE (je.STATUS = 'FAILED' OR je.EXIT_CODE = 'FAILED')
+        <include refid="JobExecutionConditions"/>
+    </select>
+
+    <select id="findRunningJobExecutions" parameterType="com.example.batchmonitor.dto.SearchConditionDto"
+            resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE (je.STATUS IN ('STARTING', 'STARTED') OR je.END_TIME IS NULL)
+        <include refid="JobExecutionConditions"/>
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="countRunningJobExecutions" parameterType="com.example.batchmonitor.dto.SearchConditionDto" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE (je.STATUS IN ('STARTING', 'STARTED') OR je.END_TIME IS NULL)
+        <include refid="JobExecutionConditions"/>
+    </select>
+
+    <select id="findJobExecutionDetail" parameterType="long"
+            resultType="com.example.batchmonitor.dto.JobExecutionDetailDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE je.JOB_EXECUTION_ID = #{jobExecutionId}
+    </select>
+</mapper>

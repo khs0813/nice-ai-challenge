@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: ${ORACLE_JDBC_URL}
+    username: ${ORACLE_USERNAME}
+    password: ${ORACLE_PASSWORD}
+    driver-class-name: oracle.jdbc.OracleDriver
+  sql:
+    init:
+      mode: never
+
+batch:
+  monitor:
+    # Spring Batch 4 이하: legacy / Spring Batch 5 이상: modern
+    parameter-schema: legacy

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('세부 단계 상세', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="page-actions">
+        <a class="btn btn-secondary btn-sm" th:href="@{/jobs/{id}(id=${step.jobExecutionId})}">배치 상세로</a>
+    </div>
+
+    <section class="summary-grid step-summary">
+        <article class="summary-card"><span class="summary-label">읽은 건수</span><strong th:text="${step.readCount}">0</strong></article>
+        <article class="summary-card"><span class="summary-label">처리 건수</span><strong th:text="${step.writeCount}">0</strong></article>
+        <article class="summary-card warning-card"><span class="summary-label">제외 건수</span><strong th:text="${step.totalSkipCount}">0</strong></article>
+        <article class="summary-card info-card"><span class="summary-label">저장 횟수</span><strong th:text="${step.commitCount}">0</strong></article>
+        <article class="summary-card danger-card"><span class="summary-label">되돌림 횟수</span><strong th:text="${step.rollbackCount}">0</strong></article>
+    </section>
+
+    <section class="card-section detail-card">
+        <div class="section-header">
+            <div>
+                <h2 th:text="${step.stepName}">단계명</h2>
+                <p>배치명: <strong th:text="${step.jobName}">배치명</strong></p>
+            </div>
+            <span class="status-badge large" th:classappend="${step.statusBadgeClass}" th:text="${step.statusLabel}">성공</span>
+        </div>
+        <div class="detail-grid">
+            <div class="detail-item"><span>단계 실행 번호</span><strong th:text="${step.stepExecutionId}">-</strong></div>
+            <div class="detail-item"><span>배치 실행 번호</span><strong th:text="${step.jobExecutionId}">-</strong></div>
+            <div class="detail-item"><span>버전</span><strong th:text="${step.version}">-</strong></div>
+            <div class="detail-item"><span>종료 결과</span><strong th:text="${step.exitCodeLabel}">-</strong></div>
+            <div class="detail-item"><span>시작일시</span><strong th:text="${step.startTimeText}">-</strong></div>
+            <div class="detail-item"><span>종료일시</span><strong th:text="${step.endTimeText}">-</strong></div>
+            <div class="detail-item"><span>최종 변경일시</span><strong th:text="${step.lastUpdatedText}">-</strong></div>
+            <div class="detail-item"><span>소요 시간</span><strong th:text="${step.durationText}">-</strong></div>
+            <div class="detail-item"><span>필터 제외</span><strong th:text="${step.filterCount}">0</strong></div>
+            <div class="detail-item"><span>읽기 제외</span><strong th:text="${step.readSkipCount}">0</strong></div>
+            <div class="detail-item"><span>처리 제외</span><strong th:text="${step.processSkipCount}">0</strong></div>
+            <div class="detail-item"><span>쓰기 제외</span><strong th:text="${step.writeSkipCount}">0</strong></div>
+        </div>
+        <div class="message-box" th:if="${step.exitMessage != null and !#strings.isEmpty(step.exitMessage)}">
+            <div class="message-header">
+                <h3>종료 메시지</h3>
+                <button type="button" class="btn btn-outline btn-xs" data-toggle-target="stepExitMessage">접기/펼치기</button>
+            </div>
+            <pre id="stepExitMessage" class="pre-message" th:text="${step.exitMessage}">exit message</pre>
+        </div>
+    </section>
+</div>
+</body>
+</html>

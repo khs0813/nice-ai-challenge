@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.batchmonitor.mapper.ValidationResultMapper">
+
+    <sql id="ValidationConditions">
+        <if test="validationType != null and validationType != ''">
+            AND v.VALIDATION_TYPE = #{validationType}
+        </if>
+        <if test="comparisonId != null">
+            AND v.RULE_ID = #{comparisonId}
+        </if>
+        <if test="comparisonName != null and comparisonName != ''">
+            AND v.RULE_NAME LIKE '%' || #{comparisonName} || '%'
+        </if>
+        <if test="resultStatus != null and resultStatus != ''">
+            AND v.RESULT_STATUS = #{resultStatus}
+        </if>
+        <if test="requestedBy != null and requestedBy != ''">
+            AND v.REQUESTED_BY = #{requestedBy}
+        </if>
+        <if test="startDateTime != null">
+            AND v.REQUESTED_AT &gt;= #{startDateTime}
+        </if>
+        <if test="endDateTime != null">
+            AND v.REQUESTED_AT &lt; #{endDateTime}
+        </if>
+    </sql>
+
+    <sql id="ValidationUnion">
+        SELECT
+            'PAIR' AS VALIDATION_TYPE,
+            r.RESULT_ID,
+            r.COMPARISON_ID AS RULE_ID,
+            c.COMPARISON_NAME AS RULE_NAME,
+            r.RESULT_STATUS,
+            r.REQUESTED_BY,
+            r.REQUESTED_AT,
+            r.STARTED_AT,
+            r.FINISHED_AT,
+            r.SYBASE_ROW_COUNT AS LEFT_ROW_COUNT,
+            r.ORACLE_ROW_COUNT AS RIGHT_ROW_COUNT,
+            COALESCE(r.MISMATCH_SUMMARY, r.ERROR_MESSAGE) AS SUMMARY
+        FROM BM_QUERY_COMPARISON_RESULT r
+        JOIN BM_QUERY_COMPARISON c
+          ON r.COMPARISON_ID = c.COMPARISON_ID
+        UNION ALL
+        SELECT
+            'SINGLE' AS VALIDATION_TYPE,
+            r.RESULT_ID,
+            r.EXPECTATION_ID AS RULE_ID,
+            e.EXPECTATION_NAME AS RULE_NAME,
+            r.RESULT_STATUS,
+            r.REQUESTED_BY,
+            r.REQUESTED_AT,
+            r.STARTED_AT,
+            r.FINISHED_AT,
+            r.ACTUAL_ROW_COUNT AS LEFT_ROW_COUNT,
+            NULL AS RIGHT_ROW_COUNT,
+            COALESCE(r.MISMATCH_SUMMARY, r.ERROR_MESSAGE) AS SUMMARY
+        FROM BM_QUERY_EXPECTATION_RESULT r
+        JOIN BM_QUERY_EXPECTATION e
+          ON r.EXPECTATION_ID = e.EXPECTATION_ID
+    </sql>
+
+    <select id="findResults" parameterType="com.example.batchmonitor.dto.QueryComparisonSearchConditionDto"
+            resultType="com.example.batchmonitor.dto.ValidationResultDto">
+        SELECT *
+        FROM (
+            <include refid="ValidationUnion"/>
+        ) v
+        WHERE 1 = 1
+        <include refid="ValidationConditions"/>
+        ORDER BY REQUESTED_AT DESC, RESULT_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="countResults" parameterType="com.example.batchmonitor.dto.QueryComparisonSearchConditionDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM (
+            <include refid="ValidationUnion"/>
+        ) v
+        WHERE 1 = 1
+        <include refid="ValidationConditions"/>
+    </select>
+</mapper>

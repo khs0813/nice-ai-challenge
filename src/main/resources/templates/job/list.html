@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('배치 실행 이력', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <section class="search-card">
+        <form th:action="@{/jobs}" method="get" class="search-form">
+            <input type="hidden" name="page" value="1">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="jobExecutionId">실행 번호</label>
+                    <input type="number" id="jobExecutionId" name="jobExecutionId" th:value="${condition.jobExecutionId}" placeholder="예: 1001">
+                </div>
+                <div class="form-group">
+                    <label for="jobName">배치명</label>
+                    <input type="text" id="jobName" name="jobName" th:value="${condition.jobName}" maxlength="100" placeholder="배치명">
+                </div>
+                <div class="form-group">
+                    <label for="status">상태</label>
+                    <select id="status" name="status">
+                        <option value="">전체</option>
+                        <option value="COMPLETED" th:selected="${condition.status == 'COMPLETED'}">성공</option>
+                        <option value="FAILED" th:selected="${condition.status == 'FAILED'}">실패</option>
+                        <option value="STARTING" th:selected="${condition.status == 'STARTING'}">시작 중</option>
+                        <option value="STARTED" th:selected="${condition.status == 'STARTED'}">실행 중</option>
+                        <option value="STOPPED" th:selected="${condition.status == 'STOPPED'}">중지됨</option>
+                        <option value="UNKNOWN" th:selected="${condition.status == 'UNKNOWN'}">상태 미확인</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="exitCode">종료 결과</label>
+                    <input type="text" id="exitCode" name="exitCode" th:value="${condition.exitCode}" maxlength="100" placeholder="예: COMPLETED">
+                </div>
+                <div class="form-group">
+                    <label for="startDate">시작일</label>
+                    <input type="date" id="startDate" name="startDate" th:value="${condition.startDate}">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">종료일</label>
+                    <input type="date" id="endDate" name="endDate" th:value="${condition.endDate}">
+                </div>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary">검색</button>
+                <a th:href="@{/jobs}" class="btn btn-secondary">초기화</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>배치 실행 이력</h2>
+                <p><strong th:text="${page.totalCount}">0</strong>건이 조회되었습니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>실행 번호</th>
+                    <th>배치 번호</th>
+                    <th>배치명</th>
+                    <th>상태</th>
+                    <th>종료 결과</th>
+                    <th>시작일시</th>
+                    <th>종료일시</th>
+                    <th>소요 시간</th>
+                    <th>최종 변경일시</th>
+                    <th>상세</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="job : ${page.items}">
+                    <td><a th:href="@{/jobs/{id}(id=${job.jobExecutionId})}" th:text="${job.jobExecutionId}">1001</a></td>
+                    <td th:text="${job.jobInstanceId}">1</td>
+                    <td class="text-strong" th:text="${job.jobName}">정산배치</td>
+                    <td><span class="status-badge" th:classappend="${job.statusBadgeClass}" th:text="${job.statusLabel}">성공</span></td>
+                    <td th:text="${job.exitCodeLabel}">정상 종료</td>
+                    <td th:text="${job.startTimeText}">-</td>
+                    <td th:text="${job.endTimeText}">-</td>
+                    <td th:text="${job.durationText}">-</td>
+                    <td th:text="${job.lastUpdatedText}">-</td>
+                    <td><a class="btn btn-outline btn-xs" th:href="@{/jobs/{id}(id=${job.jobExecutionId})}">상세</a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(page.items)}">
+                    <td colspan="10" class="empty-cell">조회된 배치 실행 이력이 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${page.totalCount > 0}">
+            <a th:classappend="${!page.hasPrevious} ? ' disabled' : ''"
+               th:href="@{/jobs(page=${page.page - 1}, size=${page.size}, jobExecutionId=${condition.jobExecutionId}, jobName=${condition.jobName}, status=${condition.status}, exitCode=${condition.exitCode}, startDate=${condition.startDate}, endDate=${condition.endDate})}">이전</a>
+            <a th:each="p : ${page.pageNumbers}"
+               th:classappend="${p == page.page} ? ' active' : ''"
+               th:text="${p}"
+               th:href="@{/jobs(page=${p}, size=${page.size}, jobExecutionId=${condition.jobExecutionId}, jobName=${condition.jobName}, status=${condition.status}, exitCode=${condition.exitCode}, startDate=${condition.startDate}, endDate=${condition.endDate})}">1</a>
+            <a th:classappend="${!page.hasNext} ? ' disabled' : ''"
+               th:href="@{/jobs(page=${page.page + 1}, size=${page.size}, jobExecutionId=${condition.jobExecutionId}, jobName=${condition.jobName}, status=${condition.status}, exitCode=${condition.exitCode}, startDate=${condition.startDate}, endDate=${condition.endDate})}">다음</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>

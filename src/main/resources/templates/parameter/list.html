@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('배치 실행 조건', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <section class="search-card">
+        <form th:action="@{/parameters}" method="get" class="search-form">
+            <input type="hidden" name="page" value="1">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="jobExecutionId">실행 번호</label>
+                    <input type="number" id="jobExecutionId" name="jobExecutionId" th:value="${condition.jobExecutionId}">
+                </div>
+                <div class="form-group">
+                    <label for="jobName">배치명</label>
+                    <input type="text" id="jobName" name="jobName" th:value="${condition.jobName}" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="parameterName">조건명</label>
+                    <input type="text" id="parameterName" name="parameterName" th:value="${condition.parameterName}" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="parameterValue">조건값</label>
+                    <input type="text" id="parameterValue" name="parameterValue" th:value="${condition.parameterValue}" maxlength="250">
+                </div>
+                <div class="form-group">
+                    <label for="startDate">실행일 시작</label>
+                    <input type="date" id="startDate" name="startDate" th:value="${condition.startDate}">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">실행일 종료</label>
+                    <input type="date" id="endDate" name="endDate" th:value="${condition.endDate}">
+                </div>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary">검색</button>
+                <a th:href="@{/parameters}" class="btn btn-secondary">초기화</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>배치 실행 조건 조회</h2>
+                <p>총 <strong th:text="${page.totalCount}">0</strong>건이 조회되었습니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>실행 번호</th>
+                    <th>배치명</th>
+                    <th>조건명</th>
+                    <th>값 유형</th>
+                    <th>조건값</th>
+                    <th>식별 조건</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="parameter : ${page.items}">
+                    <td><a th:href="@{/jobs/{id}(id=${parameter.jobExecutionId})}" th:text="${parameter.jobExecutionId}">1001</a></td>
+                    <td class="text-strong" th:text="${parameter.jobName}">정산배치</td>
+                    <td th:text="${parameter.parameterName}">businessDate</td>
+                    <td th:text="${parameter.parameterType}">STRING</td>
+                    <td th:text="${parameter.parameterValue}">2026-05-27</td>
+                    <td><span class="pill" th:text="${parameter.identifying}">Y</span></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(page.items)}">
+                    <td colspan="6" class="empty-cell">조회된 배치 실행 조건이 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" th:if="${page.totalCount > 0}">
+            <a th:classappend="${!page.hasPrevious} ? ' disabled' : ''"
+               th:href="@{/parameters(page=${page.page - 1}, size=${page.size}, jobExecutionId=${condition.jobExecutionId}, jobName=${condition.jobName}, parameterName=${condition.parameterName}, parameterValue=${condition.parameterValue}, startDate=${condition.startDate}, endDate=${condition.endDate})}">이전</a>
+            <a th:each="p : ${page.pageNumbers}"
+               th:classappend="${p == page.page} ? ' active' : ''"
+               th:text="${p}"
+               th:href="@{/parameters(page=${p}, size=${page.size}, jobExecutionId=${condition.jobExecutionId}, jobName=${condition.jobName}, parameterName=${condition.parameterName}, parameterValue=${condition.parameterValue}, startDate=${condition.startDate}, endDate=${condition.endDate})}">1</a>
+            <a th:classappend="${!page.hasNext} ? ' disabled' : ''"
+               th:href="@{/parameters(page=${page.page + 1}, size=${page.size}, jobExecutionId=${condition.jobExecutionId}, jobName=${condition.jobName}, parameterName=${condition.parameterName}, parameterValue=${condition.parameterValue}, startDate=${condition.startDate}, endDate=${condition.endDate})}">다음</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>

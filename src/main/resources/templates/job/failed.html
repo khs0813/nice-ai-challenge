@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('실패 배치', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <section class="search-card">
+        <form th:action="@{/jobs/failed}" method="get" class="search-form">
+            <input type="hidden" name="page" value="1">
+            <div class="form-row compact-row">
+                <div class="form-group">
+                    <label for="jobExecutionId">실행 번호</label>
+                    <input type="number" id="jobExecutionId" name="jobExecutionId" th:value="${condition.jobExecutionId}">
+                </div>
+                <div class="form-group">
+                    <label for="jobName">배치명</label>
+                    <input type="text" id="jobName" name="jobName" th:value="${condition.jobName}" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="startDate">시작일</label>
+                    <input type="date" id="startDate" name="startDate" th:value="${condition.startDate}">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">종료일</label>
+                    <input type="date" id="endDate" name="endDate" th:value="${condition.endDate}">
+                </div>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary">검색</button>
+                <a th:href="@{/jobs/failed}" class="btn btn-secondary">초기화</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>실패 배치 모니터링</h2>
+                <p>상태 또는 종료 결과가 실패인 실행 이력입니다. 총 <strong th:text="${page.totalCount}">0</strong>건</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>실행 번호</th>
+                    <th>배치명</th>
+                    <th>상태</th>
+                    <th>종료 결과</th>
+                    <th>오류 메시지 요약</th>
+                    <th>시작일시</th>
+                    <th>종료일시</th>
+                    <th>소요 시간</th>
+                    <th>상세</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="job : ${page.items}">
+                    <td><a th:href="@{/jobs/{id}(id=${job.jobExecutionId})}" th:text="${job.jobExecutionId}">1003</a></td>
+                    <td class="text-strong" th:text="${job.jobName}">정산배치</td>
+                    <td><span class="status-badge" th:classappend="${job.statusBadgeClass}" th:text="${job.statusLabel}">실패</span></td>
+                    <td th:text="${job.exitCodeLabel}">실패 종료</td>
+                    <td class="message-summary" th:text="${job.exitMessageSummary}">error...</td>
+                    <td th:text="${job.startTimeText}">-</td>
+                    <td th:text="${job.endTimeText}">-</td>
+                    <td th:text="${job.durationText}">-</td>
+                    <td><a class="btn btn-outline btn-xs" th:href="@{/jobs/{id}(id=${job.jobExecutionId})}">상세</a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(page.items)}">
+                    <td colspan="9" class="empty-cell">실패한 배치가 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" th:if="${page.totalCount > 0}">
+            <a th:classappend="${!page.hasPrevious} ? ' disabled' : ''"
+               th:href="@{/jobs/failed(page=${page.page - 1}, size=${page.size}, jobExecutionId=${condition.jobExecutionId}, jobName=${condition.jobName}, startDate=${condition.startDate}, endDate=${condition.endDate})}">이전</a>
+            <a th:each="p : ${page.pageNumbers}"
+               th:classappend="${p == page.page} ? ' active' : ''"
+               th:text="${p}"
+               th:href="@{/jobs/failed(page=${p}, size=${page.size}, jobExecutionId=${condition.jobExecutionId}, jobName=${condition.jobName}, startDate=${condition.startDate}, endDate=${condition.endDate})}">1</a>
+            <a th:classappend="${!page.hasNext} ? ' disabled' : ''"
+               th:href="@{/jobs/failed(page=${page.page + 1}, size=${page.size}, jobExecutionId=${condition.jobExecutionId}, jobName=${condition.jobName}, startDate=${condition.startDate}, endDate=${condition.endDate})}">다음</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>

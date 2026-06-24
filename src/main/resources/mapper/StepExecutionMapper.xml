@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.batchmonitor.mapper.StepExecutionMapper">
+
+    <sql id="BaseStepExecutionColumns">
+        se.STEP_EXECUTION_ID,
+        se.VERSION,
+        se.STEP_NAME,
+        se.JOB_EXECUTION_ID,
+        se.START_TIME,
+        se.END_TIME,
+        se.STATUS,
+        se.COMMIT_COUNT,
+        se.READ_COUNT,
+        se.FILTER_COUNT,
+        se.WRITE_COUNT,
+        se.EXIT_CODE,
+        se.EXIT_MESSAGE,
+        se.READ_SKIP_COUNT,
+        se.WRITE_SKIP_COUNT,
+        se.PROCESS_SKIP_COUNT,
+        se.ROLLBACK_COUNT,
+        se.LAST_UPDATED
+    </sql>
+
+    <select id="findStepsByJobExecutionId" parameterType="long"
+            resultType="com.example.batchmonitor.dto.StepExecutionDto">
+        SELECT
+            <include refid="BaseStepExecutionColumns"/>
+        FROM BATCH_STEP_EXECUTION se
+        WHERE se.JOB_EXECUTION_ID = #{jobExecutionId}
+        ORDER BY se.STEP_EXECUTION_ID ASC
+    </select>
+
+    <select id="findStepExecutionDetail" parameterType="long"
+            resultType="com.example.batchmonitor.dto.StepExecutionDetailDto">
+        SELECT
+            <include refid="BaseStepExecutionColumns"/>,
+            ji.JOB_NAME
+        FROM BATCH_STEP_EXECUTION se
+        JOIN BATCH_JOB_EXECUTION je
+          ON se.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE se.STEP_EXECUTION_ID = #{stepExecutionId}
+    </select>
+</mapper>

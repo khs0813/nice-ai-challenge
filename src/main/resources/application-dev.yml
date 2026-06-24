@@ -1,0 +1,10 @@
+monitor:
+  security:
+    admin:
+      username: ${MONITOR_ADMIN_USERNAME:admin}
+      # dev profile only. Password: admin1234
+      password-hash: ${MONITOR_ADMIN_PASSWORD_HASH:$2a$10$3iopYw0S7I59mR9p.uwVQuIfRYcVnAmXwmSf4E3z12qgCKtIXQkQW}
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:dev-jasypt-password}

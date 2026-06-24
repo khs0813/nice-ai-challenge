@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('이상 알림', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>검증 알림</h2>
+                <p>불일치와 오류 중심으로 저장된 알림 이력입니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table wide-table">
+                <thead>
+                <tr>
+                    <th>알림 번호</th>
+                    <th>유형</th>
+                    <th>업무 번호</th>
+                    <th>결과 번호</th>
+                    <th>상태</th>
+                    <th>제목</th>
+                    <th>메시지</th>
+                    <th>대상</th>
+                    <th>읽음</th>
+                    <th>생성일시</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${notifications}">
+                    <td th:text="${item.notificationId}">1</td>
+                    <td><span class="pill" th:text="${item.validationTypeLabel}">DB 간 비교</span></td>
+                    <td th:text="${item.ruleId}">10</td>
+                    <td>
+                        <a th:if="${item.validationType == 'PAIR'}" th:href="@{/query-comparison-results/{id}(id=${item.resultId})}" th:text="${item.resultId}">1</a>
+                        <a th:if="${item.validationType == 'SINGLE'}" th:href="@{/query-expectation-results/{id}(id=${item.resultId})}" th:text="${item.resultId}">1</a>
+                    </td>
+                    <td><span class="status-badge" th:classappend="${item.statusBadgeClass}" th:text="${item.resultStatusLabel}">불일치</span></td>
+                    <td class="text-strong" th:text="${item.title}">title</td>
+                    <td class="message-cell" th:text="${item.messageSummary}">message</td>
+                    <td class="message-cell" th:text="${item.recipients != null ? item.recipients : '-'}">-</td>
+                    <td th:text="${item.readLabel}">미읽음</td>
+                    <td th:text="${item.createdAtText}">-</td>
+                    <td>
+                        <form th:if="${item.readYn != 'Y'}" th:action="@{/validation-notifications/{id}/read(id=${item.notificationId})}" method="post">
+                            <button type="submit" class="btn btn-secondary btn-xs">읽음</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(notifications)}">
+                    <td colspan="11" class="empty-cell">알림 이력이 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+</body>
+</html>

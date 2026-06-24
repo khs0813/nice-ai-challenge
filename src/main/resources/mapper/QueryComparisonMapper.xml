@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.batchmonitor.mapper.QueryComparisonMapper">
+
+    <sql id="ComparisonColumns">
+        COMPARISON_ID,
+        COMPARISON_NAME,
+        DESCRIPTION,
+        SYBASE_QUERY,
+        ORACLE_QUERY,
+        COMPARE_MODE,
+        ENABLED_YN,
+        SCHEDULE_ENABLED_YN,
+        CRON_EXPRESSION,
+        NOTIFY_ENABLED_YN,
+        NOTIFY_ON_SUCCESS_YN,
+        NOTIFY_RECIPIENTS,
+        AI_SQL_REVIEW_YN,
+        AI_ANALYSIS_ENABLED_YN,
+        AI_SQL_REVIEW_STATUS,
+        AI_SQL_REVIEW_SUMMARY,
+        CREATED_BY,
+        CREATED_AT,
+        UPDATED_BY,
+        UPDATED_AT
+    </sql>
+
+    <sql id="ComparisonConditions">
+        <if test="comparisonId != null">
+            AND COMPARISON_ID = #{comparisonId}
+        </if>
+        <if test="comparisonName != null and comparisonName != ''">
+            AND COMPARISON_NAME LIKE '%' || #{comparisonName} || '%'
+        </if>
+        <if test="enabledYn != null and enabledYn != ''">
+            AND ENABLED_YN = #{enabledYn}
+        </if>
+    </sql>
+
+    <select id="findComparisons" parameterType="com.example.batchmonitor.dto.QueryComparisonSearchConditionDto"
+            resultType="com.example.batchmonitor.dto.QueryComparisonDto">
+        SELECT
+            <include refid="ComparisonColumns"/>
+        FROM BM_QUERY_COMPARISON
+        WHERE 1 = 1
+        <include refid="ComparisonConditions"/>
+        ORDER BY UPDATED_AT DESC, COMPARISON_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="countComparisons" parameterType="com.example.batchmonitor.dto.QueryComparisonSearchConditionDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM BM_QUERY_COMPARISON
+        WHERE 1 = 1
+        <include refid="ComparisonConditions"/>
+    </select>
+
+    <select id="findComparisonById" parameterType="long"
+            resultType="com.example.batchmonitor.dto.QueryComparisonDto">
+        SELECT
+            <include refid="ComparisonColumns"/>
+        FROM BM_QUERY_COMPARISON
+        WHERE COMPARISON_ID = #{comparisonId}
+    </select>
+
+    <insert id="insertComparison" parameterType="com.example.batchmonitor.dto.QueryComparisonDto">
+        <selectKey keyProperty="comparisonId" resultType="long" order="BEFORE">
+            SELECT BM_QUERY_COMPARISON_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO BM_QUERY_COMPARISON (
+            COMPARISON_ID,
+            COMPARISON_NAME,
+            DESCRIPTION,
+            SYBASE_QUERY,
+            ORACLE_QUERY,
+            COMPARE_MODE,
+            ENABLED_YN,
+            SCHEDULE_ENABLED_YN,
+            CRON_EXPRESSION,
+            NOTIFY_ENABLED_YN,
+            NOTIFY_ON_SUCCESS_YN,
+            NOTIFY_RECIPIENTS,
+            AI_SQL_REVIEW_YN,
+            AI_ANALYSIS_ENABLED_YN,
+            AI_SQL_REVIEW_STATUS,
+            AI_SQL_REVIEW_SUMMARY,
+            CREATED_BY,
+            CREATED_AT,
+            UPDATED_BY,
+            UPDATED_AT
+        ) VALUES (
+            #{comparisonId},
+            #{comparisonName},
+            #{description},
+            #{sybaseQuery},
+            #{oracleQuery},
+            #{compareMode},
+            #{enabledYn},
+            #{scheduleEnabledYn},
+            #{cronExpression},
+            #{notifyEnabledYn},
+            #{notifyOnSuccessYn},
+            #{notifyRecipients},
+            #{aiSqlReviewYn},
+            #{aiAnalysisEnabledYn},
+            #{aiSqlReviewStatus},
+            #{aiSqlReviewSummary},
+            #{createdBy},
+            SYSTIMESTAMP,
+            #{updatedBy},
+            SYSTIMESTAMP
+        )
+    </insert>
+
+    <update id="updateComparison" parameterType="com.example.batchmonitor.dto.QueryComparisonDto">
+        UPDATE BM_QUERY_COMPARISON
+        SET COMPARISON_NAME = #{comparisonName},
+            DESCRIPTION = #{description},
+            SYBASE_QUERY = #{sybaseQuery},
+            ORACLE_QUERY = #{oracleQuery},
+            COMPARE_MODE = #{compareMode},
+            ENABLED_YN = #{enabledYn},
+            SCHEDULE_ENABLED_YN = #{scheduleEnabledYn},
+            CRON_EXPRESSION = #{cronExpression},
+            NOTIFY_ENABLED_YN = #{notifyEnabledYn},
+            NOTIFY_ON_SUCCESS_YN = #{notifyOnSuccessYn},
+            NOTIFY_RECIPIENTS = #{notifyRecipients},
+            AI_SQL_REVIEW_YN = #{aiSqlReviewYn},
+            AI_ANALYSIS_ENABLED_YN = #{aiAnalysisEnabledYn},
+            AI_SQL_REVIEW_STATUS = #{aiSqlReviewStatus},
+            AI_SQL_REVIEW_SUMMARY = #{aiSqlReviewSummary},
+            UPDATED_BY = #{updatedBy},
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE COMPARISON_ID = #{comparisonId}
+    </update>
+
+    <update id="deleteComparison" parameterType="long">
+        UPDATE BM_QUERY_COMPARISON
+        SET ENABLED_YN = 'N',
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE COMPARISON_ID = #{comparisonId}
+    </update>
+
+    <insert id="insertResult" parameterType="com.example.batchmonitor.dto.QueryComparisonResultDto">
+        <selectKey keyProperty="resultId" resultType="long" order="BEFORE">
+            SELECT BM_QUERY_COMPARE_RESULT_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO BM_QUERY_COMPARISON_RESULT (
+            RESULT_ID,
+            COMPARISON_ID,
+            REQUESTED_BY,
+            REQUESTED_AT,
+            STARTED_AT,
+            FINISHED_AT,
+            RESULT_STATUS,
+            SYBASE_ROW_COUNT,
+            ORACLE_ROW_COUNT,
+            SYBASE_RESULT_HASH,
+            ORACLE_RESULT_HASH,
+            MISMATCH_SUMMARY,
+            ERROR_MESSAGE,
+            ORACLE_BATCH_CONTEXT,
+            AI_ANALYSIS_STATUS,
+            AI_ANALYSIS,
+            AI_ACTION_GUIDE
+        ) VALUES (
+            #{resultId},
+            #{comparisonId},
+            #{requestedBy},
+            #{requestedAt},
+            #{startedAt},
+            #{finishedAt},
+            #{resultStatus},
+            #{sybaseRowCount},
+            #{oracleRowCount},
+            #{sybaseResultHash},
+            #{oracleResultHash},
+            #{mismatchSummary},
+            #{errorMessage},
+            #{oracleBatchContext},
+            #{aiAnalysisStatus},
+            #{aiAnalysis},
+            #{aiActionGuide}
+        )
+    </insert>
+
+    <select id="findResultById" parameterType="long"
+            resultType="com.example.batchmonitor.dto.QueryComparisonResultDto">
+        SELECT
+            r.RESULT_ID,
+            r.COMPARISON_ID,
+            c.COMPARISON_NAME,
+            r.REQUESTED_BY,
+            r.REQUESTED_AT,
+            r.STARTED_AT,
+            r.FINISHED_AT,
+            r.RESULT_STATUS,
+            r.SYBASE_ROW_COUNT,
+            r.ORACLE_ROW_COUNT,
+            r.SYBASE_RESULT_HASH,
+            r.ORACLE_RESULT_HASH,
+            r.MISMATCH_SUMMARY,
+            r.ERROR_MESSAGE,
+            r.ORACLE_BATCH_CONTEXT,
+            r.AI_ANALYSIS_STATUS,
+            r.AI_ANALYSIS,
+            r.AI_ACTION_GUIDE
+        FROM BM_QUERY_COMPARISON_RESULT r
+        JOIN BM_QUERY_COMPARISON c
+          ON r.COMPARISON_ID = c.COMPARISON_ID
+        WHERE r.RESULT_ID = #{resultId}
+    </select>
+
+    <select id="findLatestResultByComparisonId" parameterType="long"
+            resultType="com.example.batchmonitor.dto.QueryComparisonResultDto">
+        SELECT
+            r.RESULT_ID,
+            r.COMPARISON_ID,
+            c.COMPARISON_NAME,
+            r.REQUESTED_BY,
+            r.REQUESTED_AT,
+            r.STARTED_AT,
+            r.FINISHED_AT,
+            r.RESULT_STATUS,
+            r.SYBASE_ROW_COUNT,
+            r.ORACLE_ROW_COUNT,
+            r.SYBASE_RESULT_HASH,
+            r.ORACLE_RESULT_HASH,
+            r.MISMATCH_SUMMARY,
+            r.ERROR_MESSAGE,
+            r.ORACLE_BATCH_CONTEXT,
+            r.AI_ANALYSIS_STATUS,
+            r.AI_ANALYSIS,
+            r.AI_ACTION_GUIDE
+        FROM BM_QUERY_COMPARISON_RESULT r
+        JOIN BM_QUERY_COMPARISON c
+          ON r.COMPARISON_ID = c.COMPARISON_ID
+        WHERE r.COMPARISON_ID = #{comparisonId}
+        ORDER BY r.REQUESTED_AT DESC, r.RESULT_ID DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <select id="findScheduledComparisons" resultType="com.example.batchmonitor.dto.QueryComparisonDto">
+        SELECT
+            <include refid="ComparisonColumns"/>
+        FROM BM_QUERY_COMPARISON
+        WHERE ENABLED_YN = 'Y'
+          AND SCHEDULE_ENABLED_YN = 'Y'
+          AND CRON_EXPRESSION IS NOT NULL
+        ORDER BY COMPARISON_ID ASC
+    </select>
+
+    <sql id="ResultConditions">
+        <if test="comparisonId != null">
+            AND r.COMPARISON_ID = #{comparisonId}
+        </if>
+        <if test="comparisonName != null and comparisonName != ''">
+            AND c.COMPARISON_NAME LIKE '%' || #{comparisonName} || '%'
+        </if>
+        <if test="resultStatus != null and resultStatus != ''">
+            AND r.RESULT_STATUS = #{resultStatus}
+        </if>
+        <if test="requestedBy != null and requestedBy != ''">
+            AND r.REQUESTED_BY = #{requestedBy}
+        </if>
+        <if test="startDateTime != null">
+            AND r.REQUESTED_AT &gt;= #{startDateTime}
+        </if>
+        <if test="endDateTime != null">
+            AND r.REQUESTED_AT &lt; #{endDateTime}
+        </if>
+    </sql>
+
+    <select id="findResults" parameterType="com.example.batchmonitor.dto.QueryComparisonSearchConditionDto"
+            resultType="com.example.batchmonitor.dto.QueryComparisonResultDto">
+        SELECT
+            r.RESULT_ID,
+            r.COMPARISON_ID,
+            c.COMPARISON_NAME,
+            r.REQUESTED_BY,
+            r.REQUESTED_AT,
+            r.STARTED_AT,
+            r.FINISHED_AT,
+            r.RESULT_STATUS,
+            r.SYBASE_ROW_COUNT,
+            r.ORACLE_ROW_COUNT,
+            r.SYBASE_RESULT_HASH,
+            r.ORACLE_RESULT_HASH,
+            r.MISMATCH_SUMMARY,
+            r.ERROR_MESSAGE,
+            r.ORACLE_BATCH_CONTEXT,
+            r.AI_ANALYSIS_STATUS,
+            r.AI_ANALYSIS,
+            r.AI_ACTION_GUIDE
+        FROM BM_QUERY_COMPARISON_RESULT r
+        JOIN BM_QUERY_COMPARISON c
+          ON r.COMPARISON_ID = c.COMPARISON_ID
+        WHERE 1 = 1
+        <include refid="ResultConditions"/>
+        ORDER BY r.REQUESTED_AT DESC, r.RESULT_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="countResults" parameterType="com.example.batchmonitor.dto.QueryComparisonSearchConditionDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM BM_QUERY_COMPARISON_RESULT r
+        JOIN BM_QUERY_COMPARISON c
+          ON r.COMPARISON_ID = c.COMPARISON_ID
+        WHERE 1 = 1
+        <include refid="ResultConditions"/>
+    </select>
+</mapper>

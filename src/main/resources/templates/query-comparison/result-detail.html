@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('DB 간 비교 상세', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="page-actions">
+        <a class="btn btn-secondary btn-sm" th:href="@{/query-comparison-results}">목록으로</a>
+        <a class="btn btn-outline btn-sm" th:href="@{/query-comparisons}">DB 간 비교</a>
+    </div>
+
+    <section class="card-section detail-card">
+        <div class="section-header">
+            <div>
+                <h2 th:text="${result.comparisonName}">DB 간 비교 결과</h2>
+                <p>결과 번호: <strong th:text="${result.resultId}">1</strong></p>
+            </div>
+            <span class="status-badge large" th:classappend="${result.statusBadgeClass}" th:text="${result.resultStatusLabel}">일치</span>
+        </div>
+        <div class="detail-grid">
+            <div class="detail-item"><span>결과 번호</span><strong th:text="${result.resultId}">-</strong></div>
+            <div class="detail-item"><span>검증 번호</span><strong th:text="${result.comparisonId}">-</strong></div>
+            <div class="detail-item"><span>실행자</span><strong th:text="${result.requestedBy}">-</strong></div>
+            <div class="detail-item"><span>실행 요청일시</span><strong th:text="${result.requestedAtText}">-</strong></div>
+            <div class="detail-item"><span>시작일시</span><strong th:text="${result.startedAtText}">-</strong></div>
+            <div class="detail-item"><span>종료일시</span><strong th:text="${result.finishedAtText}">-</strong></div>
+            <div class="detail-item"><span>소요 시간</span><strong th:text="${result.durationText}">-</strong></div>
+            <div class="detail-item"><span>Sybase 건수</span><strong th:text="${result.sybaseRowCount != null ? result.sybaseRowCount : '-'}">-</strong></div>
+            <div class="detail-item"><span>Oracle 건수</span><strong th:text="${result.oracleRowCount != null ? result.oracleRowCount : '-'}">-</strong></div>
+        </div>
+    </section>
+
+    <section class="card-section" th:if="${(result.mismatchSummary != null and !#strings.isEmpty(result.mismatchSummary)) or (result.errorMessage != null and !#strings.isEmpty(result.errorMessage))}">
+        <div class="section-header">
+            <div>
+                <h2>비교 메시지</h2>
+                <p>불일치 요약 또는 실행 오류입니다.</p>
+            </div>
+        </div>
+        <div class="message-box" th:if="${result.mismatchSummary != null and !#strings.isEmpty(result.mismatchSummary)}">
+            <div class="message-header">
+                <h3>불일치 요약</h3>
+            </div>
+            <pre class="pre-message" th:text="${result.mismatchSummary}">mismatch</pre>
+        </div>
+        <div class="message-box" th:if="${result.errorMessage != null and !#strings.isEmpty(result.errorMessage)}">
+            <div class="message-header">
+                <h3>오류 메시지</h3>
+            </div>
+            <pre class="pre-message" th:text="${result.errorMessage}">error</pre>
+        </div>
+    </section>
+
+    <section class="card-section" th:if="${result.aiAnalysisStatus != null}">
+        <div class="section-header">
+            <div>
+                <h2>AI 원인 분석</h2>
+                <p>OpenAI API로 생성한 불일치 원인 후보와 점검 순서입니다.</p>
+            </div>
+            <span class="status-badge" th:text="${result.aiAnalysisStatusLabel}">분석 완료</span>
+        </div>
+        <div class="message-box" th:if="${result.aiAnalysis != null and !#strings.isEmpty(result.aiAnalysis)}">
+            <div class="message-header">
+                <h3>분석 결과</h3>
+            </div>
+            <pre class="pre-message markdown-source" data-render-markdown th:text="${result.aiAnalysis}">analysis</pre>
+        </div>
+        <div class="message-box" th:if="${result.aiActionGuide != null and !#strings.isEmpty(result.aiActionGuide)}">
+            <div class="message-header">
+                <h3>조치 가이드</h3>
+            </div>
+            <pre class="pre-message markdown-source" data-render-markdown th:text="${result.aiActionGuide}">guide</pre>
+        </div>
+    </section>
+
+    <section class="card-section" th:if="${result.oracleBatchContext != null and !#strings.isEmpty(result.oracleBatchContext)}">
+        <div class="section-header">
+            <div>
+                <h2>Oracle 배치 상태</h2>
+                <p>검증 실행 시간대의 실패 배치 이력입니다.</p>
+            </div>
+        </div>
+        <div class="message-box">
+            <pre class="pre-message" th:text="${result.oracleBatchContext}">batch</pre>
+        </div>
+    </section>
+
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>결과 식별값</h2>
+                <p>두 조회 결과가 같은지 빠르게 확인하기 위해 계산한 값입니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive result-table">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>데이터베이스</th>
+                    <th>건수</th>
+                    <th>결과 식별값</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Sybase</td>
+                    <td th:text="${result.sybaseRowCount != null ? result.sybaseRowCount : '-'}">-</td>
+                    <td class="hash-cell wide-hash-cell" th:text="${result.sybaseResultHash != null ? result.sybaseResultHash : '-'}">-</td>
+                </tr>
+                <tr>
+                    <td>Oracle</td>
+                    <td th:text="${result.oracleRowCount != null ? result.oracleRowCount : '-'}">-</td>
+                    <td class="hash-cell wide-hash-cell" th:text="${result.oracleResultHash != null ? result.oracleResultHash : '-'}">-</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+</body>
+</html>

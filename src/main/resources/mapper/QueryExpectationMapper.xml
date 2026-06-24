@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.batchmonitor.mapper.QueryExpectationMapper">
+
+    <sql id="ExpectationColumns">
+        EXPECTATION_ID,
+        EXPECTATION_NAME,
+        DESCRIPTION,
+        TARGET_DB_TYPE,
+        QUERY_TEXT,
+        EXPECTED_VALUE_TYPE,
+        EXPECTED_OPERATOR,
+        EXPECTED_VALUE,
+        ENABLED_YN,
+        SCHEDULE_ENABLED_YN,
+        CRON_EXPRESSION,
+        NOTIFY_ENABLED_YN,
+        NOTIFY_ON_SUCCESS_YN,
+        NOTIFY_RECIPIENTS,
+        AI_SQL_REVIEW_YN,
+        AI_SQL_REVIEW_STATUS,
+        AI_SQL_REVIEW_SUMMARY,
+        CREATED_BY,
+        CREATED_AT,
+        UPDATED_BY,
+        UPDATED_AT
+    </sql>
+
+    <sql id="ExpectationConditions">
+        <if test="expectationId != null">
+            AND EXPECTATION_ID = #{expectationId}
+        </if>
+        <if test="expectationName != null and expectationName != ''">
+            AND EXPECTATION_NAME LIKE '%' || #{expectationName} || '%'
+        </if>
+        <if test="targetDbType != null and targetDbType != ''">
+            AND TARGET_DB_TYPE = #{targetDbType}
+        </if>
+        <if test="enabledYn != null and enabledYn != ''">
+            AND ENABLED_YN = #{enabledYn}
+        </if>
+    </sql>
+
+    <select id="findExpectations" parameterType="com.example.batchmonitor.dto.QueryExpectationSearchConditionDto"
+            resultType="com.example.batchmonitor.dto.QueryExpectationDto">
+        SELECT
+            <include refid="ExpectationColumns"/>
+        FROM BM_QUERY_EXPECTATION
+        WHERE 1 = 1
+        <include refid="ExpectationConditions"/>
+        ORDER BY UPDATED_AT DESC, EXPECTATION_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="countExpectations" parameterType="com.example.batchmonitor.dto.QueryExpectationSearchConditionDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM BM_QUERY_EXPECTATION
+        WHERE 1 = 1
+        <include refid="ExpectationConditions"/>
+    </select>
+
+    <select id="findExpectationById" parameterType="long"
+            resultType="com.example.batchmonitor.dto.QueryExpectationDto">
+        SELECT
+            <include refid="ExpectationColumns"/>
+        FROM BM_QUERY_EXPECTATION
+        WHERE EXPECTATION_ID = #{expectationId}
+    </select>
+
+    <insert id="insertExpectation" parameterType="com.example.batchmonitor.dto.QueryExpectationDto">
+        <selectKey keyProperty="expectationId" resultType="long" order="BEFORE">
+            SELECT BM_QUERY_EXPECTATION_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO BM_QUERY_EXPECTATION (
+            EXPECTATION_ID,
+            EXPECTATION_NAME,
+            DESCRIPTION,
+            TARGET_DB_TYPE,
+            QUERY_TEXT,
+            EXPECTED_VALUE_TYPE,
+            EXPECTED_OPERATOR,
+            EXPECTED_VALUE,
+            ENABLED_YN,
+            SCHEDULE_ENABLED_YN,
+            CRON_EXPRESSION,
+            NOTIFY_ENABLED_YN,
+            NOTIFY_ON_SUCCESS_YN,
+            NOTIFY_RECIPIENTS,
+            AI_SQL_REVIEW_YN,
+            AI_SQL_REVIEW_STATUS,
+            AI_SQL_REVIEW_SUMMARY,
+            CREATED_BY,
+            CREATED_AT,
+            UPDATED_BY,
+            UPDATED_AT
+        ) VALUES (
+            #{expectationId},
+            #{expectationName},
+            #{description},
+            #{targetDbType},
+            #{queryText},
+            #{expectedValueType},
+            #{expectedOperator},
+            #{expectedValue},
+            #{enabledYn},
+            #{scheduleEnabledYn},
+            #{cronExpression},
+            #{notifyEnabledYn},
+            #{notifyOnSuccessYn},
+            #{notifyRecipients},
+            #{aiSqlReviewYn},
+            #{aiSqlReviewStatus},
+            #{aiSqlReviewSummary},
+            #{createdBy},
+            SYSTIMESTAMP,
+            #{updatedBy},
+            SYSTIMESTAMP
+        )
+    </insert>
+
+    <update id="updateExpectation" parameterType="com.example.batchmonitor.dto.QueryExpectationDto">
+        UPDATE BM_QUERY_EXPECTATION
+        SET EXPECTATION_NAME = #{expectationName},
+            DESCRIPTION = #{description},
+            TARGET_DB_TYPE = #{targetDbType},
+            QUERY_TEXT = #{queryText},
+            EXPECTED_VALUE_TYPE = #{expectedValueType},
+            EXPECTED_OPERATOR = #{expectedOperator},
+            EXPECTED_VALUE = #{expectedValue},
+            ENABLED_YN = #{enabledYn},
+            SCHEDULE_ENABLED_YN = #{scheduleEnabledYn},
+            CRON_EXPRESSION = #{cronExpression},
+            NOTIFY_ENABLED_YN = #{notifyEnabledYn},
+            NOTIFY_ON_SUCCESS_YN = #{notifyOnSuccessYn},
+            NOTIFY_RECIPIENTS = #{notifyRecipients},
+            AI_SQL_REVIEW_YN = #{aiSqlReviewYn},
+            AI_SQL_REVIEW_STATUS = #{aiSqlReviewStatus},
+            AI_SQL_REVIEW_SUMMARY = #{aiSqlReviewSummary},
+            UPDATED_BY = #{updatedBy},
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE EXPECTATION_ID = #{expectationId}
+    </update>
+
+    <update id="deleteExpectation" parameterType="long">
+        UPDATE BM_QUERY_EXPECTATION
+        SET ENABLED_YN = 'N',
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE EXPECTATION_ID = #{expectationId}
+    </update>
+
+    <insert id="insertResult" parameterType="com.example.batchmonitor.dto.QueryExpectationResultDto">
+        <selectKey keyProperty="resultId" resultType="long" order="BEFORE">
+            SELECT BM_QUERY_EXPECT_RESULT_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO BM_QUERY_EXPECTATION_RESULT (
+            RESULT_ID,
+            EXPECTATION_ID,
+            REQUESTED_BY,
+            REQUESTED_AT,
+            STARTED_AT,
+            FINISHED_AT,
+            RESULT_STATUS,
+            ACTUAL_ROW_COUNT,
+            ACTUAL_VALUE,
+            ACTUAL_RESULT_HASH,
+            EXPECTED_VALUE,
+            MISMATCH_SUMMARY,
+            ERROR_MESSAGE
+        ) VALUES (
+            #{resultId},
+            #{expectationId},
+            #{requestedBy},
+            #{requestedAt},
+            #{startedAt},
+            #{finishedAt},
+            #{resultStatus},
+            #{actualRowCount},
+            #{actualValue},
+            #{actualResultHash},
+            #{expectedValue},
+            #{mismatchSummary},
+            #{errorMessage}
+        )
+    </insert>
+
+    <select id="findResultById" parameterType="long"
+            resultType="com.example.batchmonitor.dto.QueryExpectationResultDto">
+        SELECT
+            r.RESULT_ID,
+            r.EXPECTATION_ID,
+            e.EXPECTATION_NAME,
+            e.TARGET_DB_TYPE,
+            e.EXPECTED_VALUE_TYPE,
+            e.EXPECTED_OPERATOR,
+            r.REQUESTED_BY,
+            r.REQUESTED_AT,
+            r.STARTED_AT,
+            r.FINISHED_AT,
+            r.RESULT_STATUS,
+            r.ACTUAL_ROW_COUNT,
+            r.ACTUAL_VALUE,
+            r.ACTUAL_RESULT_HASH,
+            r.EXPECTED_VALUE,
+            r.MISMATCH_SUMMARY,
+            r.ERROR_MESSAGE
+        FROM BM_QUERY_EXPECTATION_RESULT r
+        JOIN BM_QUERY_EXPECTATION e
+          ON r.EXPECTATION_ID = e.EXPECTATION_ID
+        WHERE r.RESULT_ID = #{resultId}
+    </select>
+
+    <select id="findLatestResultByExpectationId" parameterType="long"
+            resultType="com.example.batchmonitor.dto.QueryExpectationResultDto">
+        SELECT
+            r.RESULT_ID,
+            r.EXPECTATION_ID,
+            e.EXPECTATION_NAME,
+            e.TARGET_DB_TYPE,
+            e.EXPECTED_VALUE_TYPE,
+            e.EXPECTED_OPERATOR,
+            r.REQUESTED_BY,
+            r.REQUESTED_AT,
+            r.STARTED_AT,
+            r.FINISHED_AT,
+            r.RESULT_STATUS,
+            r.ACTUAL_ROW_COUNT,
+            r.ACTUAL_VALUE,
+            r.ACTUAL_RESULT_HASH,
+            r.EXPECTED_VALUE,
+            r.MISMATCH_SUMMARY,
+            r.ERROR_MESSAGE
+        FROM BM_QUERY_EXPECTATION_RESULT r
+        JOIN BM_QUERY_EXPECTATION e
+          ON r.EXPECTATION_ID = e.EXPECTATION_ID
+        WHERE r.EXPECTATION_ID = #{expectationId}
+        ORDER BY r.REQUESTED_AT DESC, r.RESULT_ID DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <select id="findScheduledExpectations" resultType="com.example.batchmonitor.dto.QueryExpectationDto">
+        SELECT
+            <include refid="ExpectationColumns"/>
+        FROM BM_QUERY_EXPECTATION
+        WHERE ENABLED_YN = 'Y'
+          AND SCHEDULE_ENABLED_YN = 'Y'
+          AND CRON_EXPRESSION IS NOT NULL
+        ORDER BY EXPECTATION_ID ASC
+    </select>
+
+    <sql id="ResultConditions">
+        <if test="expectationId != null">
+            AND r.EXPECTATION_ID = #{expectationId}
+        </if>
+        <if test="expectationName != null and expectationName != ''">
+            AND e.EXPECTATION_NAME LIKE '%' || #{expectationName} || '%'
+        </if>
+        <if test="targetDbType != null and targetDbType != ''">
+            AND e.TARGET_DB_TYPE = #{targetDbType}
+        </if>
+        <if test="resultStatus != null and resultStatus != ''">
+            AND r.RESULT_STATUS = #{resultStatus}
+        </if>
+        <if test="requestedBy != null and requestedBy != ''">
+            AND r.REQUESTED_BY = #{requestedBy}
+        </if>
+        <if test="startDateTime != null">
+            AND r.REQUESTED_AT &gt;= #{startDateTime}
+        </if>
+        <if test="endDateTime != null">
+            AND r.REQUESTED_AT &lt; #{endDateTime}
+        </if>
+    </sql>
+
+    <select id="findResults" parameterType="com.example.batchmonitor.dto.QueryExpectationSearchConditionDto"
+            resultType="com.example.batchmonitor.dto.QueryExpectationResultDto">
+        SELECT
+            r.RESULT_ID,
+            r.EXPECTATION_ID,
+            e.EXPECTATION_NAME,
+            e.TARGET_DB_TYPE,
+            e.EXPECTED_VALUE_TYPE,
+            e.EXPECTED_OPERATOR,
+            r.REQUESTED_BY,
+            r.REQUESTED_AT,
+            r.STARTED_AT,
+            r.FINISHED_AT,
+            r.RESULT_STATUS,
+            r.ACTUAL_ROW_COUNT,
+            r.ACTUAL_VALUE,
+            r.ACTUAL_RESULT_HASH,
+            r.EXPECTED_VALUE,
+            r.MISMATCH_SUMMARY,
+            r.ERROR_MESSAGE
+        FROM BM_QUERY_EXPECTATION_RESULT r
+        JOIN BM_QUERY_EXPECTATION e
+          ON r.EXPECTATION_ID = e.EXPECTATION_ID
+        WHERE 1 = 1
+        <include refid="ResultConditions"/>
+        ORDER BY r.REQUESTED_AT DESC, r.RESULT_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="countResults" parameterType="com.example.batchmonitor.dto.QueryExpectationSearchConditionDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM BM_QUERY_EXPECTATION_RESULT r
+        JOIN BM_QUERY_EXPECTATION e
+          ON r.EXPECTATION_ID = e.EXPECTATION_ID
+        WHERE 1 = 1
+        <include refid="ResultConditions"/>
+    </select>
+</mapper>

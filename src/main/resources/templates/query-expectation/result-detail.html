@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('기대값 검증 상세', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="page-actions">
+        <a class="btn btn-secondary btn-sm" th:href="@{/query-expectation-results}">목록으로</a>
+        <a class="btn btn-outline btn-sm" th:href="@{/query-expectations}">기대값 검증</a>
+    </div>
+    <section class="card-section detail-card">
+        <div class="section-header">
+            <div>
+                <h2 th:text="${result.expectationName}">기대값 검증 결과</h2>
+                <p>결과 번호: <strong th:text="${result.resultId}">1</strong></p>
+            </div>
+            <span class="status-badge large" th:classappend="${result.statusBadgeClass}" th:text="${result.resultStatusLabel}">성공</span>
+        </div>
+        <div class="detail-grid">
+            <div class="detail-item"><span>결과 번호</span><strong th:text="${result.resultId}">-</strong></div>
+            <div class="detail-item"><span>검증 번호</span><strong th:text="${result.expectationId}">-</strong></div>
+            <div class="detail-item"><span>대상 데이터베이스</span><strong th:text="${result.targetDbType}">-</strong></div>
+            <div class="detail-item"><span>기대값 타입</span><strong th:text="${result.expectedValueTypeLabel}">-</strong></div>
+            <div class="detail-item"><span>비교 연산자</span><strong th:text="${result.expectedOperatorLabel}">-</strong></div>
+            <div class="detail-item"><span>실행자</span><strong th:text="${result.requestedBy}">-</strong></div>
+            <div class="detail-item"><span>실행 요청일시</span><strong th:text="${result.requestedAtText}">-</strong></div>
+            <div class="detail-item"><span>소요 시간</span><strong th:text="${result.durationText}">-</strong></div>
+            <div class="detail-item"><span>조회 건수</span><strong th:text="${result.actualRowCount != null ? result.actualRowCount : '-'}">-</strong></div>
+        </div>
+    </section>
+    <section class="card-section">
+        <div class="section-header"><div><h2>값 비교</h2><p>실제값과 등록된 기대값입니다.</p></div></div>
+        <div class="message-box">
+            <div class="message-header"><h3>실제값</h3></div>
+            <pre class="pre-message" th:text="${result.actualValue != null ? result.actualValue : '-'}">actual</pre>
+        </div>
+        <div class="message-box">
+            <div class="message-header"><h3>기대값</h3></div>
+            <pre class="pre-message" th:text="${result.expectedValue != null ? result.expectedValue : '-'}">expected</pre>
+        </div>
+        <div class="message-box" th:if="${result.mismatchSummary != null and !#strings.isEmpty(result.mismatchSummary)}">
+            <div class="message-header"><h3>결과 요약</h3></div>
+            <pre class="pre-message" th:text="${result.mismatchSummary}">summary</pre>
+        </div>
+        <div class="message-box" th:if="${result.errorMessage != null and !#strings.isEmpty(result.errorMessage)}">
+            <div class="message-header"><h3>오류 메시지</h3></div>
+            <pre class="pre-message" th:text="${result.errorMessage}">error</pre>
+        </div>
+    </section>
+</div>
+</body>
+</html>

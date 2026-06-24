@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('DB 간 비교', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2 th:text="${comparison.comparisonId == null ? 'DB 간 비교 등록' : 'DB 간 비교 수정'}">DB 간 비교 등록</h2>
+                <p>Sybase와 Oracle의 조회 결과가 같은지 확인하는 검증 기준을 관리합니다.</p>
+            </div>
+            <a th:if="${comparison.comparisonId != null}" th:href="@{/query-comparisons}" class="btn btn-secondary btn-sm">신규 등록</a>
+        </div>
+        <form th:action="@{/query-comparisons}" th:object="${comparison}" method="post" class="query-form">
+            <input type="hidden" th:field="*{comparisonId}">
+            <div class="alert alert-danger alert-review" th:if="${formError != null}">
+                <div class="alert-title">저장할 수 없습니다</div>
+                <div class="markdown-source markdown-alert" data-render-markdown th:text="${formError}">검증 오류</div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="comparisonName">비교명</label>
+                    <input type="text" id="comparisonName" th:field="*{comparisonName}" maxlength="200" required placeholder="예: 일별 정산 금액 검증">
+                </div>
+                <div class="form-group">
+                    <label>운영 옵션</label>
+                    <div class="form-toggle-row">
+                        <input type="hidden" id="enabledYn" th:field="*{enabledYn}">
+                        <label class="form-toggle">
+                            <input type="checkbox" data-sync-checkbox="enabledYn">
+                            <span>사용</span>
+                        </label>
+                        <input type="hidden" id="scheduleEnabledYn" th:field="*{scheduleEnabledYn}">
+                        <label class="form-toggle">
+                            <input type="checkbox" data-sync-checkbox="scheduleEnabledYn">
+                            <span>스케줄 실행</span>
+                        </label>
+                        <input type="hidden" id="notifyEnabledYn" th:field="*{notifyEnabledYn}">
+                        <label class="form-toggle">
+                            <input type="checkbox" data-sync-checkbox="notifyEnabledYn">
+                            <span>이상 알림</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row query-grid">
+                <div class="form-group">
+                    <label for="sybaseQuery">Sybase 검증 SQL</label>
+                    <textarea id="sybaseQuery" th:field="*{sybaseQuery}" required spellcheck="false" placeholder="SELECT ..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="oracleQuery">Oracle 검증 SQL</label>
+                    <textarea id="oracleQuery" th:field="*{oracleQuery}" required spellcheck="false" placeholder="SELECT ..."></textarea>
+                </div>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm advanced-toggle" data-toggle-target="comparison-advanced" aria-expanded="false">고급 설정</button>
+            <div id="comparison-advanced" class="advanced-section is-collapsed">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>비교 방식</label>
+                        <div class="segmented-control">
+                            <label class="segmented-option">
+                                <input type="radio" th:field="*{compareMode}" value="EXACT">
+                                <span>전체 비교</span>
+                            </label>
+                            <label class="segmented-option">
+                                <input type="radio" th:field="*{compareMode}" value="HASH">
+                                <span>전체 결과 기준</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cronExpression">자동 실행 주기</label>
+                        <input type="text" id="cronExpression" th:field="*{cronExpression}" maxlength="100" placeholder="예: 0 */10 * * * *">
+                    </div>
+                    <div class="form-group">
+                        <label>알림 옵션</label>
+                        <div class="form-toggle-row">
+                            <input type="hidden" id="notifyOnSuccessYn" th:field="*{notifyOnSuccessYn}">
+                            <label class="form-toggle">
+                                <input type="checkbox" data-sync-checkbox="notifyOnSuccessYn">
+                                <span>성공 시에도 알림</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row ai-option-row">
+                    <div class="form-group">
+                        <label>AI 지원</label>
+                        <div class="form-toggle-row">
+                            <input type="hidden" id="aiSqlReviewYn" th:field="*{aiSqlReviewYn}">
+                            <label class="form-toggle">
+                                <input type="checkbox" data-sync-checkbox="aiSqlReviewYn">
+                                <span>저장 전 SQL 검토</span>
+                            </label>
+                            <input type="hidden" id="aiAnalysisEnabledYn" th:field="*{aiAnalysisEnabledYn}">
+                            <label class="form-toggle">
+                                <input type="checkbox" data-sync-checkbox="aiAnalysisEnabledYn">
+                                <span>불일치 원인 분석</span>
+                            </label>
+                        </div>
+                        <p class="field-help">SQL 검토는 등록/수정 시 실행되고, 원인 분석은 불일치 또는 오류 결과에만 실행됩니다.</p>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="notifyRecipients">알림 대상</label>
+                        <input type="text" id="notifyRecipients" th:field="*{notifyRecipients}" maxlength="1000" placeholder="예: settlement-team@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">설명</label>
+                        <textarea id="description" class="textarea-small" th:field="*{description}" maxlength="1000" placeholder="비교 목적, 주요 조건, 담당자 메모"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="message-box" th:if="${comparison.aiSqlReviewSummary != null and !#strings.isEmpty(comparison.aiSqlReviewSummary)}">
+                <div class="message-header">
+                    <h3>AI SQL 검토 결과</h3>
+                    <span class="status-badge" th:text="${comparison.aiSqlReviewStatusLabel}">검토 통과</span>
+                </div>
+                <pre class="pre-message markdown-source" data-render-markdown th:text="${comparison.aiSqlReviewSummary}">review</pre>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary" th:text="${comparison.comparisonId == null ? '등록' : '수정'}">등록</button>
+                <a th:href="@{/query-comparisons}" class="btn btn-secondary">초기화</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-section" th:if="${latestResult != null}">
+        <div class="section-header">
+            <div>
+                <h2>최근 실행 결과</h2>
+                <p>
+                    <span th:text="${latestResult.comparisonName}">비교명</span>
+                    <span> / 요청일시 </span>
+                    <span th:text="${latestResult.requestedAtText}">-</span>
+                </p>
+            </div>
+            <span class="status-badge large"
+                  th:classappend="${latestResult.statusBadgeClass}"
+                  th:text="${latestResult.resultStatusLabel}">일치</span>
+        </div>
+        <div class="result-summary-grid">
+            <div class="result-summary-item">
+                <span>Sybase 건수</span>
+                <strong th:text="${latestResult.sybaseRowCount != null ? latestResult.sybaseRowCount : '-'}">0</strong>
+            </div>
+            <div class="result-summary-item">
+                <span>Oracle 건수</span>
+                <strong th:text="${latestResult.oracleRowCount != null ? latestResult.oracleRowCount : '-'}">0</strong>
+            </div>
+            <div class="result-summary-item">
+                <span>소요 시간</span>
+                <strong th:text="${latestResult.durationText}">-</strong>
+            </div>
+            <div class="result-summary-item">
+                <span>실행자</span>
+                <strong th:text="${latestResult.requestedBy}">admin</strong>
+            </div>
+        </div>
+        <div class="table-responsive result-table">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>항목</th>
+                    <th>Sybase</th>
+                    <th>Oracle</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>결과 식별값</td>
+                    <td class="hash-cell" th:text="${latestResult.sybaseResultHash != null ? latestResult.sybaseResultHash : '-'}">-</td>
+                    <td class="hash-cell" th:text="${latestResult.oracleResultHash != null ? latestResult.oracleResultHash : '-'}">-</td>
+                </tr>
+                <tr>
+                    <td>조회 건수</td>
+                    <td th:text="${latestResult.sybaseRowCount != null ? latestResult.sybaseRowCount : '-'}">0</td>
+                    <td th:text="${latestResult.oracleRowCount != null ? latestResult.oracleRowCount : '-'}">0</td>
+                </tr>
+                <tr>
+                    <td>비교 메시지</td>
+                    <td colspan="2" class="message-cell" th:text="${latestResult.messageSummary}">-</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="search-card">
+        <form th:action="@{/query-comparisons}" method="get" class="search-form">
+            <input type="hidden" name="page" value="1">
+            <div class="form-row compact-row">
+                <div class="form-group">
+                    <label for="comparisonId">검증 번호</label>
+                    <input type="number" id="comparisonId" name="comparisonId" th:value="${condition.comparisonId}" placeholder="예: 1001">
+                </div>
+                <div class="form-group">
+                    <label for="searchComparisonName">비교명</label>
+                    <input type="text" id="searchComparisonName" name="comparisonName" th:value="${condition.comparisonName}" maxlength="200">
+                </div>
+                <div class="form-group">
+                    <label for="enabledYnSearch">사용 여부</label>
+                    <select id="enabledYnSearch" name="enabledYn">
+                        <option value="">전체</option>
+                        <option value="Y" th:selected="${condition.enabledYn == 'Y'}">사용</option>
+                        <option value="N" th:selected="${condition.enabledYn == 'N'}">중지</option>
+                    </select>
+                </div>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary">검색</button>
+                <a th:href="@{/query-comparisons}" class="btn btn-secondary">초기화</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>DB 간 비교 목록</h2>
+                <p><strong th:text="${page.totalCount}">0</strong>건이 조회되었습니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table wide-table">
+                <thead>
+                <tr>
+                    <th>번호</th>
+                    <th>비교명</th>
+                    <th>사용</th>
+                    <th>AI</th>
+                    <th>스케줄</th>
+                    <th>최근 수정</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${page.items}">
+                    <td th:text="${item.comparisonId}">1</td>
+                    <td class="text-strong" th:text="${item.comparisonName}">정산 비교</td>
+                    <td><span class="status-badge" th:classappend="${item.enabledYn == 'Y' ? 'badge-completed' : 'badge-stopped'}" th:text="${item.enabledLabel}">사용</span></td>
+                    <td>
+                        <div th:text="${item.aiAnalysisEnabledYn == 'Y' ? '원인 분석 사용' : '원인 분석 중지'}">원인 분석 사용</div>
+                        <div class="muted-text" th:text="${item.aiSqlReviewStatusLabel}">검토 없음</div>
+                    </td>
+                    <td>
+                        <div th:text="${item.scheduleEnabledLabel}">중지</div>
+                        <div class="muted-text" th:text="${item.cronExpression != null ? item.cronExpression : '-'}">-</div>
+                    </td>
+                    <td>
+                        <div th:text="${item.updatedAtText}">-</div>
+                        <div class="muted-text" th:text="${item.updatedBy != null ? item.updatedBy : item.createdBy}">admin</div>
+                    </td>
+                    <td>
+                        <div class="inline-actions">
+                            <form th:action="@{/query-comparisons/{id}/request(id=${item.comparisonId})}" method="post">
+                                <button type="submit" class="btn btn-primary btn-xs" th:disabled="${item.enabledYn != 'Y'}">검증 실행</button>
+                            </form>
+                            <a class="btn btn-outline btn-xs" th:href="@{/query-comparisons/{id}/edit(id=${item.comparisonId})}">수정</a>
+                            <form th:action="@{/query-comparisons/{id}/delete(id=${item.comparisonId})}" method="post">
+                                <button type="submit" class="btn btn-secondary btn-xs">중지</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(page.items)}">
+                    <td colspan="7" class="empty-cell">등록된 DB 간 비교 설정이 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${page.totalCount > 0}">
+            <a th:classappend="${!page.hasPrevious} ? ' disabled' : ''"
+               th:href="@{/query-comparisons(page=${page.page - 1}, size=${page.size}, comparisonId=${condition.comparisonId}, comparisonName=${condition.comparisonName}, enabledYn=${condition.enabledYn})}">이전</a>
+            <a th:each="p : ${page.pageNumbers}"
+               th:classappend="${p == page.page} ? ' active' : ''"
+               th:text="${p}"
+               th:href="@{/query-comparisons(page=${p}, size=${page.size}, comparisonId=${condition.comparisonId}, comparisonName=${condition.comparisonName}, enabledYn=${condition.enabledYn})}">1</a>
+            <a th:classappend="${!page.hasNext} ? ' disabled' : ''"
+               th:href="@{/query-comparisons(page=${page.page + 1}, size=${page.size}, comparisonId=${condition.comparisonId}, comparisonName=${condition.comparisonName}, enabledYn=${condition.enabledYn})}">다음</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>

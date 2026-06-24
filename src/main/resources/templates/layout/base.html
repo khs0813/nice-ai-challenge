@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(pageTitle, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} + ' | 정산 검증 모니터링'">정산 검증 모니터링</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/table.css}">
+</head>
+<body>
+<div class="app-wrapper">
+    <aside class="sidebar">
+        <a class="brand-box brand-link" th:href="@{/dashboard}" aria-label="대시보드로 이동">
+            <div class="brand-mark">DV</div>
+            <div>
+                <div class="brand-title">Data Validator</div>
+                <div class="brand-subtitle">배치·정산 데이터 검증</div>
+            </div>
+        </a>
+        <nav class="sidebar-nav">
+            <div class="sidebar-group" id="batch-monitor-menu">
+                <button type="button" class="sidebar-group-toggle" data-toggle-target="batch-monitor-menu" aria-expanded="true">
+                    <span>배치 모니터링</span>
+                    <span class="sidebar-chevron"></span>
+                </button>
+                <div class="sidebar-submenu">
+                    <a class="sidebar-link sidebar-sublink" th:classappend="${activeMenu == 'dashboard'} ? ' active' : ''" th:href="@{/dashboard}">
+                        <span class="nav-dot"></span>대시보드
+                    </a>
+                    <a class="sidebar-link sidebar-sublink" th:classappend="${activeMenu == 'jobs'} ? ' active' : ''" th:href="@{/jobs}">
+                        <span class="nav-dot"></span>배치 실행 이력
+                    </a>
+                    <a class="sidebar-link sidebar-sublink" th:classappend="${activeMenu == 'failed'} ? ' active' : ''" th:href="@{/jobs/failed}">
+                        <span class="nav-dot"></span>실패 배치
+                    </a>
+                    <a class="sidebar-link sidebar-sublink" th:classappend="${activeMenu == 'running'} ? ' active' : ''" th:href="@{/jobs/running}">
+                        <span class="nav-dot"></span>실행 중 배치
+                    </a>
+                    <a class="sidebar-link sidebar-sublink" th:classappend="${activeMenu == 'parameters'} ? ' active' : ''" th:href="@{/parameters}">
+                        <span class="nav-dot"></span>배치 파라미터
+                    </a>
+                </div>
+            </div>
+
+            <div class="sidebar-group" id="data-validation-menu">
+                <button type="button" class="sidebar-group-toggle" data-toggle-target="data-validation-menu" aria-expanded="true">
+                    <span>데이터 검증</span>
+                    <span class="sidebar-chevron"></span>
+                </button>
+                <div class="sidebar-submenu">
+                    <a class="sidebar-link sidebar-sublink" th:classappend="${activeMenu == 'queryComparisons'} ? ' active' : ''" th:href="@{/query-comparisons}">
+                        <span class="nav-dot"></span>이기종 DB 검증
+                    </a>
+                    <a class="sidebar-link sidebar-sublink" th:classappend="${activeMenu == 'queryExpectations'} ? ' active' : ''" th:href="@{/query-expectations}">
+                        <span class="nav-dot"></span>기대값 검증
+                    </a>
+                    <a class="sidebar-link sidebar-sublink" th:classappend="${activeMenu == 'validationResults'} ? ' active' : ''" th:href="@{/validation-results}">
+                        <span class="nav-dot"></span>검증 결과
+                    </a>
+                    <a class="sidebar-link sidebar-sublink" th:classappend="${activeMenu == 'validationNotifications'} ? ' active' : ''" th:href="@{/validation-notifications}">
+                        <span class="nav-dot"></span>이상 알림
+                    </a>
+                </div>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <span>운영 데이터 조회 전용</span>
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-header">
+            <div>
+                <h1 th:text="${pageTitle}">대시보드</h1>
+                <p>배치 실행 현황과 정산 데이터 검증 결과를 확인합니다.</p>
+            </div>
+            <div class="user-area">
+                <div class="user-chip">
+                    <span class="user-avatar">A</span>
+                    <span th:text="${loginUsername != null ? loginUsername : 'admin'}">admin</span>
+                </div>
+                <form class="logout-form" th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-secondary btn-sm">로그아웃</button>
+                </form>
+            </div>
+        </header>
+
+        <main class="content">
+            <div th:replace="${content}"></div>
+        </main>
+
+        <footer class="footer">
+            <span>COPYRIGHT(C) NICE INFORMATION SERVICE ALL RIGHTS RESERVED.</span>
+        </footer>
+    </div>
+</div>
+<script th:src="@{/js/common.js}"></script>
+</body>
+</html>

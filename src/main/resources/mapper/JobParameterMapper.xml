@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.batchmonitor.mapper.JobParameterMapper">
+
+    <!--
+      legacy: Spring Batch 4 이하 구조
+        TYPE_CD, KEY_NAME, STRING_VAL, DATE_VAL, LONG_VAL, DOUBLE_VAL, IDENTIFYING
+      modern: Spring Batch 5 이상 구조
+        PARAMETER_NAME, PARAMETER_TYPE, PARAMETER_VALUE, IDENTIFYING
+      application.yml의 batch.monitor.parameter-schema 값으로 선택합니다.
+    -->
+
+    <sql id="LegacyParameterValueExpression">
+        CASE
+            WHEN p.STRING_VAL IS NOT NULL THEN p.STRING_VAL
+            WHEN p.DATE_VAL IS NOT NULL THEN TO_CHAR(p.DATE_VAL, 'YYYY-MM-DD HH24:MI:SS')
+            WHEN p.LONG_VAL IS NOT NULL THEN TO_CHAR(p.LONG_VAL)
+            WHEN p.DOUBLE_VAL IS NOT NULL THEN TO_CHAR(p.DOUBLE_VAL)
+            ELSE NULL
+        END
+    </sql>
+
+    <sql id="CommonParameterConditions">
+        <if test="jobExecutionId != null">
+            AND p.JOB_EXECUTION_ID = #{jobExecutionId}
+        </if>
+        <if test="jobName != null and jobName != ''">
+            AND ji.JOB_NAME LIKE '%' || #{jobName} || '%'
+        </if>
+        <if test="startDateTime != null">
+            AND je.START_TIME &gt;= #{startDateTime}
+        </if>
+        <if test="endDateTime != null">
+            AND je.START_TIME &lt; #{endDateTime}
+        </if>
+    </sql>
+
+    <sql id="ModernParameterConditions">
+        <include refid="CommonParameterConditions"/>
+        <if test="parameterName != null and parameterName != ''">
+            AND p.PARAMETER_NAME LIKE '%' || #{parameterName} || '%'
+        </if>
+        <if test="parameterValue != null and parameterValue != ''">
+            AND p.PARAMETER_VALUE LIKE '%' || #{parameterValue} || '%'
+        </if>
+    </sql>
+
+    <sql id="LegacyParameterConditions">
+        <include refid="CommonParameterConditions"/>
+        <if test="parameterName != null and parameterName != ''">
+            AND p.KEY_NAME LIKE '%' || #{parameterName} || '%'
+        </if>
+        <if test="parameterValue != null and parameterValue != ''">
+            AND (
+                p.STRING_VAL LIKE '%' || #{parameterValue} || '%'
+                OR TO_CHAR(p.DATE_VAL, 'YYYY-MM-DD HH24:MI:SS') LIKE '%' || #{parameterValue} || '%'
+                OR TO_CHAR(p.LONG_VAL) LIKE '%' || #{parameterValue} || '%'
+                OR TO_CHAR(p.DOUBLE_VAL) LIKE '%' || #{parameterValue} || '%'
+            )
+        </if>
+    </sql>
+
+    <select id="findJobParametersLegacy" parameterType="com.example.batchmonitor.dto.SearchConditionDto"
+            resultType="com.example.batchmonitor.dto.JobParameterDto">
+        SELECT
+            p.JOB_EXECUTION_ID,
+            ji.JOB_NAME,
+            p.KEY_NAME AS PARAMETER_NAME,
+            p.TYPE_CD AS PARAMETER_TYPE,
+            <include refid="LegacyParameterValueExpression"/> AS PARAMETER_VALUE,
+            p.IDENTIFYING
+        FROM BATCH_JOB_EXECUTION_PARAMS p
+        JOIN BATCH_JOB_EXECUTION je
+          ON p.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE 1 = 1
+        <include refid="LegacyParameterConditions"/>
+        ORDER BY p.JOB_EXECUTION_ID DESC, p.KEY_NAME ASC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="countJobParametersLegacy" parameterType="com.example.batchmonitor.dto.SearchConditionDto" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION_PARAMS p
+        JOIN BATCH_JOB_EXECUTION je
+          ON p.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE 1 = 1
+        <include refid="LegacyParameterConditions"/>
+    </select>
+
+    <select id="findJobParametersByJobExecutionIdLegacy" parameterType="long"
+            resultType="com.example.batchmonitor.dto.JobParameterDto">
+        SELECT
+            p.JOB_EXECUTION_ID,
+            ji.JOB_NAME,
+            p.KEY_NAME AS PARAMETER_NAME,
+            p.TYPE_CD AS PARAMETER_TYPE,
+            <include refid="LegacyParameterValueExpression"/> AS PARAMETER_VALUE,
+            p.IDENTIFYING
+        FROM BATCH_JOB_EXECUTION_PARAMS p
+        JOIN BATCH_JOB_EXECUTION je
+          ON p.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE p.JOB_EXECUTION_ID = #{jobExecutionId}
+        ORDER BY p.KEY_NAME ASC
+    </select>
+
+    <select id="findJobParametersModern" parameterType="com.example.batchmonitor.dto.SearchConditionDto"
+            resultType="com.example.batchmonitor.dto.JobParameterDto">
+        SELECT
+            p.JOB_EXECUTION_ID,
+            ji.JOB_NAME,
+            p.PARAMETER_NAME,
+            p.PARAMETER_TYPE,
+            p.PARAMETER_VALUE,
+            p.IDENTIFYING
+        FROM BATCH_JOB_EXECUTION_PARAMS p
+        JOIN BATCH_JOB_EXECUTION je
+          ON p.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE 1 = 1
+        <include refid="ModernParameterConditions"/>
+        ORDER BY p.JOB_EXECUTION_ID DESC, p.PARAMETER_NAME ASC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="countJobParametersModern" parameterType="com.example.batchmonitor.dto.SearchConditionDto" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION_PARAMS p
+        JOIN BATCH_JOB_EXECUTION je
+          ON p.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE 1 = 1
+        <include refid="ModernParameterConditions"/>
+    </select>
+
+    <select id="findJobParametersByJobExecutionIdModern" parameterType="long"
+            resultType="com.example.batchmonitor.dto.JobParameterDto">
+        SELECT
+            p.JOB_EXECUTION_ID,
+            ji.JOB_NAME,
+            p.PARAMETER_NAME,
+            p.PARAMETER_TYPE,
+            p.PARAMETER_VALUE,
+            p.IDENTIFYING
+        FROM BATCH_JOB_EXECUTION_PARAMS p
+        JOIN BATCH_JOB_EXECUTION je
+          ON p.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE p.JOB_EXECUTION_ID = #{jobExecutionId}
+        ORDER BY p.PARAMETER_NAME ASC
+    </select>
+</mapper>

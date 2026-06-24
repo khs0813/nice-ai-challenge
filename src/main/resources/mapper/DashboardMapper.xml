@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.batchmonitor.mapper.DashboardMapper">
+
+    <sql id="BaseJobExecutionColumns">
+        je.JOB_EXECUTION_ID,
+        je.VERSION,
+        je.JOB_INSTANCE_ID,
+        ji.JOB_NAME,
+        je.CREATE_TIME,
+        je.START_TIME,
+        je.END_TIME,
+        je.STATUS,
+        je.EXIT_CODE,
+        je.EXIT_MESSAGE,
+        je.LAST_UPDATED
+    </sql>
+
+    <select id="countTotalJobs" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION
+    </select>
+
+    <select id="countTodayJobs" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION
+        WHERE COALESCE(START_TIME, CREATE_TIME) &gt;= #{startDateTime}
+          AND COALESCE(START_TIME, CREATE_TIME) &lt; #{endDateTime}
+    </select>
+
+    <select id="countCompletedJobs" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION
+        WHERE STATUS = 'COMPLETED'
+           OR EXIT_CODE = 'COMPLETED'
+    </select>
+
+    <select id="countFailedJobs" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION
+        WHERE STATUS = 'FAILED'
+           OR EXIT_CODE = 'FAILED'
+    </select>
+
+    <select id="countRunningJobs" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION
+        WHERE STATUS IN ('STARTING', 'STARTED')
+           OR END_TIME IS NULL
+    </select>
+
+    <select id="countRecentFailedJobs" resultType="long">
+        SELECT COUNT(*)
+        FROM BATCH_JOB_EXECUTION
+        WHERE (STATUS = 'FAILED' OR EXIT_CODE = 'FAILED')
+          AND CREATE_TIME &gt;= #{fromDateTime}
+    </select>
+
+    <select id="findLatestJobName" resultType="string">
+        SELECT ji.JOB_NAME
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <select id="findRecentJobExecutions" resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        OFFSET 0 ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <select id="findCompletedExecutionsForAverage" resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            START_TIME,
+            END_TIME
+        FROM BATCH_JOB_EXECUTION
+        WHERE START_TIME IS NOT NULL
+          AND END_TIME IS NOT NULL
+        ORDER BY JOB_EXECUTION_ID DESC
+        OFFSET 0 ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <select id="findTotalJobExecutions" resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="findTodayJobExecutions" resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE COALESCE(je.START_TIME, je.CREATE_TIME) &gt;= #{startDateTime}
+          AND COALESCE(je.START_TIME, je.CREATE_TIME) &lt; #{endDateTime}
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="findCompletedJobExecutions" resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE je.STATUS = 'COMPLETED'
+           OR je.EXIT_CODE = 'COMPLETED'
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="findFailedJobExecutions" resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE je.STATUS = 'FAILED'
+           OR je.EXIT_CODE = 'FAILED'
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="findRunningJobExecutions" resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE je.STATUS IN ('STARTING', 'STARTED')
+           OR je.END_TIME IS NULL
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="findRecentFailedJobExecutions" resultType="com.example.batchmonitor.dto.JobExecutionDto">
+        SELECT
+            <include refid="BaseJobExecutionColumns"/>
+        FROM BATCH_JOB_EXECUTION je
+        JOIN BATCH_JOB_INSTANCE ji
+          ON je.JOB_INSTANCE_ID = ji.JOB_INSTANCE_ID
+        WHERE (je.STATUS = 'FAILED' OR je.EXIT_CODE = 'FAILED')
+          AND je.CREATE_TIME &gt;= #{fromDateTime}
+        ORDER BY je.JOB_EXECUTION_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+</mapper>

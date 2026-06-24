@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('DB 간 비교 결과', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <section class="search-card">
+        <form th:action="@{/query-comparison-results}" method="get" class="search-form">
+            <input type="hidden" name="page" value="1">
+            <div class="form-row compact-row">
+                <div class="form-group">
+                    <label for="comparisonId">검증 번호</label>
+                    <input type="number" id="comparisonId" name="comparisonId" th:value="${condition.comparisonId}">
+                </div>
+                <div class="form-group">
+                    <label for="comparisonName">비교명</label>
+                    <input type="text" id="comparisonName" name="comparisonName" th:value="${condition.comparisonName}" maxlength="200">
+                </div>
+                <div class="form-group">
+                    <label for="resultStatus">결과</label>
+                    <select id="resultStatus" name="resultStatus">
+                        <option value="">전체</option>
+                        <option value="REQUESTED" th:selected="${condition.resultStatus == 'REQUESTED'}">대기</option>
+                        <option value="RUNNING" th:selected="${condition.resultStatus == 'RUNNING'}">실행 중</option>
+                        <option value="SUCCESS" th:selected="${condition.resultStatus == 'SUCCESS'}">일치</option>
+                        <option value="FAIL" th:selected="${condition.resultStatus == 'FAIL'}">불일치</option>
+                        <option value="ERROR" th:selected="${condition.resultStatus == 'ERROR'}">오류</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="requestedBy">요청자</label>
+                    <input type="text" id="requestedBy" name="requestedBy" th:value="${condition.requestedBy}" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="startDate">요청 시작일</label>
+                    <input type="date" id="startDate" name="startDate" th:value="${condition.startDate}">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">요청 종료일</label>
+                    <input type="date" id="endDate" name="endDate" th:value="${condition.endDate}">
+                </div>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary">검색</button>
+                <a th:href="@{/query-comparison-results}" class="btn btn-secondary">초기화</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>DB 간 비교 결과</h2>
+                <p><strong th:text="${page.totalCount}">0</strong>건이 조회되었습니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table wide-table">
+                <thead>
+                <tr>
+                    <th>결과 번호</th>
+                    <th>비교명</th>
+                    <th>결과</th>
+                    <th>요청일시</th>
+                    <th>수행 시간</th>
+                    <th>건수</th>
+                    <th>비교 메시지</th>
+                    <th>AI 분석</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="result : ${page.items}">
+                    <td><a th:href="@{/query-comparison-results/{id}(id=${result.resultId})}" th:text="${result.resultId}">1</a></td>
+                    <td class="text-strong" th:text="${result.comparisonName}">정산 비교</td>
+                    <td><span class="status-badge" th:classappend="${result.statusBadgeClass}" th:text="${result.resultStatusLabel}">일치</span></td>
+                    <td>
+                        <div th:text="${result.requestedAtText}">-</div>
+                        <div class="muted-text" th:text="${result.requestedBy}">admin</div>
+                    </td>
+                    <td th:text="${result.durationText}">-</td>
+                    <td>
+                        <div>Sybase <strong th:text="${result.sybaseRowCount != null ? result.sybaseRowCount : '-'}">0</strong></div>
+                        <div class="muted-text">Oracle <strong th:text="${result.oracleRowCount != null ? result.oracleRowCount : '-'}">0</strong></div>
+                    </td>
+                    <td class="message-cell" th:text="${result.messageSummary}">-</td>
+                    <td>
+                        <div th:text="${result.aiAnalysisStatusLabel}">-</div>
+                        <div class="muted-text" th:text="${result.aiAnalysisSummary}">-</div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(page.items)}">
+                    <td colspan="8" class="empty-cell">조회된 DB 간 비교 결과가 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${page.totalCount > 0}">
+            <a th:classappend="${!page.hasPrevious} ? ' disabled' : ''"
+               th:href="@{/query-comparison-results(page=${page.page - 1}, size=${page.size}, comparisonId=${condition.comparisonId}, comparisonName=${condition.comparisonName}, resultStatus=${condition.resultStatus}, requestedBy=${condition.requestedBy}, startDate=${condition.startDate}, endDate=${condition.endDate})}">이전</a>
+            <a th:each="p : ${page.pageNumbers}"
+               th:classappend="${p == page.page} ? ' active' : ''"
+               th:text="${p}"
+               th:href="@{/query-comparison-results(page=${p}, size=${page.size}, comparisonId=${condition.comparisonId}, comparisonName=${condition.comparisonName}, resultStatus=${condition.resultStatus}, requestedBy=${condition.requestedBy}, startDate=${condition.startDate}, endDate=${condition.endDate})}">1</a>
+            <a th:classappend="${!page.hasNext} ? ' disabled' : ''"
+               th:href="@{/query-comparison-results(page=${page.page + 1}, size=${page.size}, comparisonId=${condition.comparisonId}, comparisonName=${condition.comparisonName}, resultStatus=${condition.resultStatus}, requestedBy=${condition.requestedBy}, startDate=${condition.startDate}, endDate=${condition.endDate})}">다음</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>

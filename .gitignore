@@ -1,0 +1,55 @@
+# Build output
+target/
+out/
+*.class
+*.jar
+*.war
+*.ear
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+logs/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+application-local.yml
+application-local.yaml
+application-secret.yml
+application-secret.yaml
+application-private.yml
+application-private.yaml
+src/main/resources/application-local.yml
+src/main/resources/application-local.yaml
+src/main/resources/application-secret.yml
+src/main/resources/application-secret.yaml
+src/main/resources/application-private.yml
+src/main/resources/application-private.yaml
+
+# Keys and certificates
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Local databases and dumps
+*.db
+*.sqlite
+*.sqlite3
+*.h2.db
+*.mv.db
+*.trace.db
+*.dump
+*.sql.gz
+
+# OS and IDE files
+.DS_Store
+.idea/
+*.iml
+.vscode/

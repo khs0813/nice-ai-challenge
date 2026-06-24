@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('배치 상세', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="page-actions">
+        <a class="btn btn-secondary btn-sm" th:href="@{/jobs}">목록으로</a>
+    </div>
+
+    <section class="card-section detail-card">
+        <div class="section-header">
+            <div>
+                <h2 th:text="${job.jobName}">배치명</h2>
+                <p>실행 번호: <strong th:text="${job.jobExecutionId}">1001</strong></p>
+            </div>
+            <span class="status-badge large" th:classappend="${job.statusBadgeClass}" th:text="${job.statusLabel}">성공</span>
+        </div>
+        <div class="detail-grid">
+            <div class="detail-item"><span>실행 번호</span><strong th:text="${job.jobExecutionId}">-</strong></div>
+            <div class="detail-item"><span>배치 번호</span><strong th:text="${job.jobInstanceId}">-</strong></div>
+            <div class="detail-item"><span>버전</span><strong th:text="${job.version}">-</strong></div>
+            <div class="detail-item"><span>종료 결과</span><strong th:text="${job.exitCodeLabel}">-</strong></div>
+            <div class="detail-item"><span>등록일시</span><strong th:text="${job.createTimeText}">-</strong></div>
+            <div class="detail-item"><span>시작일시</span><strong th:text="${job.startTimeText}">-</strong></div>
+            <div class="detail-item"><span>종료일시</span><strong th:text="${job.endTimeText}">-</strong></div>
+            <div class="detail-item"><span>최종 변경일시</span><strong th:text="${job.lastUpdatedText}">-</strong></div>
+            <div class="detail-item"><span>소요 시간</span><strong th:text="${job.durationText}">-</strong></div>
+        </div>
+
+        <div class="message-box" th:if="${job.exitMessage != null and !#strings.isEmpty(job.exitMessage)}">
+            <div class="message-header">
+                <h3>종료 메시지</h3>
+                <button type="button" class="btn btn-outline btn-xs" data-toggle-target="jobExitMessage">접기/펼치기</button>
+            </div>
+            <pre id="jobExitMessage" class="pre-message" th:text="${job.exitMessage}">exit message</pre>
+        </div>
+    </section>
+
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>실행 조건</h2>
+                <p>해당 배치 실행에 사용된 조건값입니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>조건명</th>
+                    <th>값 유형</th>
+                    <th>조건값</th>
+                    <th>식별 조건</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="parameter : ${job.parameters}">
+                    <td th:text="${parameter.parameterName}">businessDate</td>
+                    <td th:text="${parameter.parameterType}">STRING</td>
+                    <td th:text="${parameter.parameterValue}">2026-05-27</td>
+                    <td><span class="pill" th:text="${parameter.identifying}">Y</span></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(job.parameters)}">
+                    <td colspan="4" class="empty-cell">등록된 실행 조건이 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>세부 단계 실행 목록</h2>
+                <p>배치 실행에 포함된 단계별 처리 현황입니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table wide-table">
+                <thead>
+                <tr>
+                    <th>단계 실행 번호</th>
+                    <th>단계명</th>
+                    <th>상태</th>
+                    <th>종료 결과</th>
+                    <th>읽은 건수</th>
+                    <th>처리 건수</th>
+                    <th>저장 횟수</th>
+                    <th>되돌림 횟수</th>
+                    <th>읽기 제외</th>
+                    <th>처리 제외</th>
+                    <th>쓰기 제외</th>
+                    <th>필터 제외</th>
+                    <th>시작일시</th>
+                    <th>종료일시</th>
+                    <th>소요 시간</th>
+                    <th>상세</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="step : ${job.steps}">
+                    <td th:text="${step.stepExecutionId}">2001</td>
+                    <td class="text-strong" th:text="${step.stepName}">step</td>
+                    <td><span class="status-badge" th:classappend="${step.statusBadgeClass}" th:text="${step.statusLabel}">성공</span></td>
+                    <td th:text="${step.exitCodeLabel}">정상 종료</td>
+                    <td th:text="${step.readCount}">0</td>
+                    <td th:text="${step.writeCount}">0</td>
+                    <td th:text="${step.commitCount}">0</td>
+                    <td th:text="${step.rollbackCount}">0</td>
+                    <td th:text="${step.readSkipCount}">0</td>
+                    <td th:text="${step.processSkipCount}">0</td>
+                    <td th:text="${step.writeSkipCount}">0</td>
+                    <td th:text="${step.filterCount}">0</td>
+                    <td th:text="${step.startTimeText}">-</td>
+                    <td th:text="${step.endTimeText}">-</td>
+                    <td th:text="${step.durationText}">-</td>
+                    <td><a class="btn btn-outline btn-xs" th:href="@{/steps/{id}(id=${step.stepExecutionId})}">상세</a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(job.steps)}">
+                    <td colspan="16" class="empty-cell">세부 단계 실행 정보가 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+</body>
+</html>

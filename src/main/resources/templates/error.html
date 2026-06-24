@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오류 | Batch Monitor</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+</head>
+<body class="error-body">
+<div class="error-card">
+    <div class="error-code">!</div>
+    <h1>오류가 발생했습니다.</h1>
+    <p>잠시 후 다시 시도해주세요. 문제가 계속되면 관리자에게 문의해주세요.</p>
+    <div class="error-actions">
+        <a class="btn btn-primary" th:href="@{/dashboard}">대시보드로 이동</a>
+        <a class="btn btn-secondary" th:href="@{/dashboard}">이전 화면</a>
+    </div>
+</div>
+</body>
+</html>

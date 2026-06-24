@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('기대값 검증 결과', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>기대값 검증 결과</h2>
+                <p><strong th:text="${page.totalCount}">0</strong>건이 조회되었습니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table wide-table">
+                <thead>
+                <tr>
+                    <th>결과 번호</th>
+                    <th>검증 번호</th>
+                    <th>검증명</th>
+                    <th>결과</th>
+                    <th>대상 DB</th>
+                    <th>요청자</th>
+                    <th>요청일시</th>
+                    <th>소요 시간</th>
+                    <th>실제값</th>
+                    <th>기대값</th>
+                    <th>메시지</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="result : ${page.items}">
+                    <td><a th:href="@{/query-expectation-results/{id}(id=${result.resultId})}" th:text="${result.resultId}">1</a></td>
+                    <td th:text="${result.expectationId}">10</td>
+                    <td class="text-strong" th:text="${result.expectationName}">미정산 건수</td>
+                    <td><span class="status-badge" th:classappend="${result.statusBadgeClass}" th:text="${result.resultStatusLabel}">성공</span></td>
+                    <td th:text="${result.targetDbType}">ORACLE</td>
+                    <td th:text="${result.requestedBy}">admin</td>
+                    <td th:text="${result.requestedAtText}">-</td>
+                    <td th:text="${result.durationText}">-</td>
+                    <td class="message-cell" th:text="${result.actualValueSummary}">-</td>
+                    <td class="message-cell" th:text="${result.expectedValueSummary}">-</td>
+                    <td class="message-cell" th:text="${result.messageSummary}">-</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(page.items)}">
+                    <td colspan="11" class="empty-cell">조회된 기대값 검증 결과가 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${page.totalCount > 0}">
+            <a th:classappend="${!page.hasPrevious} ? ' disabled' : ''"
+               th:href="@{/query-expectation-results(page=${page.page - 1}, size=${page.size})}">이전</a>
+            <a th:each="p : ${page.pageNumbers}"
+               th:classappend="${p == page.page} ? ' active' : ''"
+               th:text="${p}"
+               th:href="@{/query-expectation-results(page=${p}, size=${page.size})}">1</a>
+            <a th:classappend="${!page.hasNext} ? ' disabled' : ''"
+               th:href="@{/query-expectation-results(page=${page.page + 1}, size=${page.size})}">다음</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>

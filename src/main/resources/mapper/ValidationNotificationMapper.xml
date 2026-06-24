@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.batchmonitor.mapper.ValidationNotificationMapper">
+
+    <insert id="insertNotification" parameterType="com.example.batchmonitor.dto.ValidationNotificationDto">
+        <selectKey keyProperty="notificationId" resultType="long" order="BEFORE">
+            SELECT BM_VALIDATION_NOTIFICATION_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO BM_VALIDATION_NOTIFICATION (
+            NOTIFICATION_ID,
+            VALIDATION_TYPE,
+            RULE_ID,
+            RESULT_ID,
+            RESULT_STATUS,
+            TITLE,
+            MESSAGE,
+            RECIPIENTS,
+            READ_YN,
+            CREATED_AT
+        ) VALUES (
+            #{notificationId},
+            #{validationType},
+            #{ruleId},
+            #{resultId},
+            #{resultStatus},
+            #{title},
+            #{message},
+            #{recipients},
+            'N',
+            SYSTIMESTAMP
+        )
+    </insert>
+
+    <select id="findNotifications" resultType="com.example.batchmonitor.dto.ValidationNotificationDto">
+        SELECT
+            NOTIFICATION_ID,
+            VALIDATION_TYPE,
+            RULE_ID,
+            RESULT_ID,
+            RESULT_STATUS,
+            TITLE,
+            MESSAGE,
+            RECIPIENTS,
+            READ_YN,
+            CREATED_AT
+        FROM BM_VALIDATION_NOTIFICATION
+        ORDER BY CREATED_AT DESC, NOTIFICATION_ID DESC
+        FETCH FIRST 100 ROWS ONLY
+    </select>
+
+    <update id="markRead" parameterType="long">
+        UPDATE BM_VALIDATION_NOTIFICATION
+        SET READ_YN = 'Y'
+        WHERE NOTIFICATION_ID = #{notificationId}
+    </update>
+</mapper>

@@ -1,0 +1,59 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:test}
+  thymeleaf:
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
+  type-aliases-package: com.example.batchmonitor.dto
+  configuration:
+    map-underscore-to-camel-case: true
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:}
+    algorithm: PBEWITHHMACSHA512ANDAES_256
+    iv-generator-classname: org.jasypt.iv.RandomIvGenerator
+    key-obtention-iterations: 1000
+    pool-size: 1
+    salt-generator-classname: org.jasypt.salt.RandomSaltGenerator
+    string-output-type: base64
+
+server:
+  port: 8080
+  tomcat:
+    allow-trace: false
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: ${SESSION_COOKIE_SECURE:false}
+        same-site: lax
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+monitor:
+  security:
+    admin:
+      username: ${MONITOR_ADMIN_USERNAME:admin}
+      # Default local password: admin1234. Override with MONITOR_ADMIN_PASSWORD_HASH in production.
+      password-hash: ${MONITOR_ADMIN_PASSWORD_HASH:$2a$10$3iopYw0S7I59mR9p.uwVQuIfRYcVnAmXwmSf4E3z12qgCKtIXQkQW}
+
+batch:
+  monitor:
+    # Spring Boot 2.x/Spring Batch 4 계열 기본값은 legacy입니다.
+    # Spring Batch 5 PARAMETER_NAME/PARAMETER_TYPE/PARAMETER_VALUE 구조라면 modern으로 변경하세요.
+    parameter-schema: legacy
+
+openai:
+  enabled: ${OPENAI_ENABLED:true}
+  api-key: ${OPENAI_API_KEY:}
+  base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+  model: ${OPENAI_MODEL:gpt-5.5}
+  timeout-seconds: ${OPENAI_TIMEOUT_SECONDS:30}
+  max-output-tokens: ${OPENAI_MAX_OUTPUT_TOKENS:1200}

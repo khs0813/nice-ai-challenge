@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('기대값 검증', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2 th:text="${expectation.expectationId == null ? '기대값 검증 등록' : '기대값 검증 수정'}">기대값 검증 등록</h2>
+                <p>선택한 데이터베이스의 조회 결과가 등록한 기대값과 일치하는지 검증합니다.</p>
+            </div>
+            <a th:if="${expectation.expectationId != null}" th:href="@{/query-expectations}" class="btn btn-secondary btn-sm">신규 등록</a>
+        </div>
+        <form th:action="@{/query-expectations}" th:object="${expectation}" method="post" class="query-form">
+            <input type="hidden" th:field="*{expectationId}">
+            <div class="alert alert-danger alert-review" th:if="${formError != null}">
+                <div class="alert-title">저장할 수 없습니다</div>
+                <div class="markdown-source markdown-alert" data-render-markdown th:text="${formError}">검증 오류</div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="expectationName">검증명</label>
+                    <input type="text" id="expectationName" th:field="*{expectationName}" maxlength="200" required placeholder="예: 전일 미정산 건수">
+                </div>
+                <div class="form-group">
+                    <label>대상 데이터베이스</label>
+                    <div class="segmented-control">
+                        <label class="segmented-option">
+                            <input type="radio" th:field="*{targetDbType}" value="ORACLE">
+                            <span>Oracle</span>
+                        </label>
+                        <label class="segmented-option">
+                            <input type="radio" th:field="*{targetDbType}" value="SYBASE">
+                            <span>Sybase</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>운영 옵션</label>
+                    <div class="form-toggle-row">
+                        <input type="hidden" id="enabledYn" th:field="*{enabledYn}">
+                        <label class="form-toggle">
+                            <input type="checkbox" data-sync-checkbox="enabledYn">
+                            <span>사용</span>
+                        </label>
+                        <input type="hidden" id="scheduleEnabledYn" th:field="*{scheduleEnabledYn}">
+                        <label class="form-toggle">
+                            <input type="checkbox" data-sync-checkbox="scheduleEnabledYn">
+                            <span>스케줄 실행</span>
+                        </label>
+                        <input type="hidden" id="notifyEnabledYn" th:field="*{notifyEnabledYn}">
+                        <label class="form-toggle">
+                            <input type="checkbox" data-sync-checkbox="notifyEnabledYn">
+                            <span>이상 알림</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="expectedValueType">기대값 타입</label>
+                    <select id="expectedValueType" th:field="*{expectedValueType}">
+                        <option value="SCALAR">단일 값</option>
+                        <option value="ROW_COUNT">조회 건수</option>
+                        <option value="JSON">전체 결과(JSON)</option>
+                        <option value="HASH">전체 결과 해시</option>
+                    </select>
+                    <p class="field-help">대부분의 집계 검증은 단일 값, 조회 결과가 없어야 하는 검증은 조회 건수를 사용합니다.</p>
+                </div>
+                <div class="form-group">
+                    <label for="expectedOperator">비교 연산자</label>
+                    <select id="expectedOperator" th:field="*{expectedOperator}">
+                        <option value="EQ">같음</option>
+                        <option value="NE">다름</option>
+                        <option value="GT">초과</option>
+                        <option value="GTE">이상</option>
+                        <option value="LT">미만</option>
+                        <option value="LTE">이하</option>
+                        <option value="CONTAINS">포함</option>
+                    </select>
+                    <p class="field-help">숫자 비교는 초과, 이상, 미만, 이하를 사용합니다.</p>
+                </div>
+                <div class="form-group">
+                    <label for="cronExpression">자동 실행 주기</label>
+                    <input type="text" id="cronExpression" th:field="*{cronExpression}" maxlength="100" placeholder="예: 0 0 7 * * *">
+                </div>
+            </div>
+            <div class="form-row query-grid">
+                <div class="form-group">
+                    <label for="queryText">검증 쿼리</label>
+                    <textarea id="queryText" th:field="*{queryText}" required spellcheck="false" placeholder="SELECT COUNT(*) AS CNT FROM ..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="expectedValue">기대값</label>
+                    <textarea id="expectedValue" th:field="*{expectedValue}" required spellcheck="false" placeholder="예: 0"></textarea>
+                </div>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm advanced-toggle" data-toggle-target="expectation-advanced" aria-expanded="false">고급 설정</button>
+            <div id="expectation-advanced" class="advanced-section is-collapsed">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>AI 지원</label>
+                        <div class="form-toggle-row">
+                            <input type="hidden" id="aiSqlReviewYn" th:field="*{aiSqlReviewYn}">
+                            <label class="form-toggle">
+                                <input type="checkbox" data-sync-checkbox="aiSqlReviewYn">
+                                <span>저장 전 SQL 검토</span>
+                            </label>
+                        </div>
+                        <p class="field-help">기대값 타입, 비교 연산자, 조회 조건이 검증 목적과 맞는지 저장 전에 검토합니다.</p>
+                    </div>
+                    <div class="form-group">
+                        <label>알림 옵션</label>
+                        <div class="form-toggle-row">
+                            <input type="hidden" id="notifyOnSuccessYn" th:field="*{notifyOnSuccessYn}">
+                            <label class="form-toggle">
+                                <input type="checkbox" data-sync-checkbox="notifyOnSuccessYn">
+                                <span>성공 시에도 알림</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="notifyRecipients">알림 대상</label>
+                        <input type="text" id="notifyRecipients" th:field="*{notifyRecipients}" maxlength="1000" placeholder="예: settlement-team@example.com">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="description">설명</label>
+                        <textarea id="description" class="textarea-small" th:field="*{description}" maxlength="1000" placeholder="검증 목적, 기준, 담당자 메모"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="message-box" th:if="${expectation.aiSqlReviewSummary != null and !#strings.isEmpty(expectation.aiSqlReviewSummary)}">
+                <div class="message-header">
+                    <h3>AI SQL 검토 결과</h3>
+                    <span class="status-badge" th:text="${expectation.aiSqlReviewStatusLabel}">검토 통과</span>
+                </div>
+                <pre class="pre-message markdown-source" data-render-markdown th:text="${expectation.aiSqlReviewSummary}">review</pre>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary" th:text="${expectation.expectationId == null ? '등록' : '수정'}">등록</button>
+                <a th:href="@{/query-expectations}" class="btn btn-secondary">초기화</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-section" th:if="${latestResult != null}">
+        <div class="section-header">
+            <div>
+                <h2>최근 실행 결과</h2>
+                <p><span th:text="${latestResult.expectationName}">검증명</span> / <span th:text="${latestResult.requestedAtText}">-</span></p>
+            </div>
+            <span class="status-badge large" th:classappend="${latestResult.statusBadgeClass}" th:text="${latestResult.resultStatusLabel}">성공</span>
+        </div>
+        <div class="result-summary-grid">
+            <div class="result-summary-item"><span>조회 건수</span><strong th:text="${latestResult.actualRowCount != null ? latestResult.actualRowCount : '-'}">0</strong></div>
+            <div class="result-summary-item"><span>실제값</span><strong th:text="${latestResult.actualValueSummary}">-</strong></div>
+            <div class="result-summary-item"><span>기대값</span><strong th:text="${latestResult.expectedValueSummary}">-</strong></div>
+            <div class="result-summary-item"><span>소요 시간</span><strong th:text="${latestResult.durationText}">-</strong></div>
+        </div>
+        <div class="message-box" th:if="${latestResult.messageSummary != null and !#strings.isEmpty(latestResult.messageSummary)}">
+            <pre class="pre-message" th:text="${latestResult.messageSummary}">message</pre>
+        </div>
+    </section>
+
+    <section class="search-card">
+        <form th:action="@{/query-expectations}" method="get" class="search-form">
+            <input type="hidden" name="page" value="1">
+            <div class="form-row compact-row">
+                <div class="form-group">
+                    <label for="expectationId">검증 번호</label>
+                    <input type="number" id="expectationId" name="expectationId" th:value="${condition.expectationId}">
+                </div>
+                <div class="form-group">
+                    <label for="searchExpectationName">검증명</label>
+                    <input type="text" id="searchExpectationName" name="expectationName" th:value="${condition.expectationName}" maxlength="200">
+                </div>
+                <div class="form-group">
+                    <label for="targetDbTypeSearch">대상 데이터베이스</label>
+                    <select id="targetDbTypeSearch" name="targetDbType">
+                        <option value="">전체</option>
+                        <option value="ORACLE" th:selected="${condition.targetDbType == 'ORACLE'}">Oracle</option>
+                        <option value="SYBASE" th:selected="${condition.targetDbType == 'SYBASE'}">Sybase</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="enabledYnSearch">사용 여부</label>
+                    <select id="enabledYnSearch" name="enabledYn">
+                        <option value="">전체</option>
+                        <option value="Y" th:selected="${condition.enabledYn == 'Y'}">사용</option>
+                        <option value="N" th:selected="${condition.enabledYn == 'N'}">중지</option>
+                    </select>
+                </div>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary">검색</button>
+                <a th:href="@{/query-expectations}" class="btn btn-secondary">초기화</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>기대값 검증 목록</h2>
+                <p><strong th:text="${page.totalCount}">0</strong>건이 조회되었습니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table wide-table">
+                <thead>
+                <tr>
+                    <th>번호</th>
+                    <th>검증명</th>
+                    <th>대상 DB</th>
+                    <th>기대값</th>
+                    <th>사용</th>
+                    <th>스케줄</th>
+                    <th>알림</th>
+                    <th>SQL 검토</th>
+                    <th>검증 SQL</th>
+                    <th>수정자</th>
+                    <th>수정일시</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${page.items}">
+                    <td th:text="${item.expectationId}">1</td>
+                    <td class="text-strong" th:text="${item.expectationName}">미정산 건수</td>
+                    <td th:text="${item.targetDbType}">ORACLE</td>
+                    <td class="message-cell" th:text="${item.expectedValueSummary}">0</td>
+                    <td><span class="status-badge" th:classappend="${item.enabledYn == 'Y' ? 'badge-completed' : 'badge-stopped'}" th:text="${item.enabledLabel}">사용</span></td>
+                    <td>
+                        <div th:text="${item.scheduleEnabledLabel}">중지</div>
+                        <div class="muted-text" th:text="${item.cronExpression != null ? item.cronExpression : '-'}">-</div>
+                    </td>
+                    <td th:text="${item.notifyEnabledLabel}">사용</td>
+                    <td th:text="${item.aiSqlReviewStatusLabel}">검토 없음</td>
+                    <td><div class="muted-text" th:text="${item.querySummary}">SELECT</div></td>
+                    <td th:text="${item.updatedBy != null ? item.updatedBy : item.createdBy}">admin</td>
+                    <td th:text="${item.updatedAtText}">-</td>
+                    <td>
+                        <div class="inline-actions">
+                            <form th:action="@{/query-expectations/{id}/request(id=${item.expectationId})}" method="post">
+                                <button type="submit" class="btn btn-primary btn-xs" th:disabled="${item.enabledYn != 'Y'}">검증 실행</button>
+                            </form>
+                            <a class="btn btn-outline btn-xs" th:href="@{/query-expectations/{id}/edit(id=${item.expectationId})}">수정</a>
+                            <form th:action="@{/query-expectations/{id}/delete(id=${item.expectationId})}" method="post">
+                                <button type="submit" class="btn btn-secondary btn-xs">중지</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(page.items)}">
+                    <td colspan="12" class="empty-cell">등록된 기대값 검증 설정이 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${page.totalCount > 0}">
+            <a th:classappend="${!page.hasPrevious} ? ' disabled' : ''"
+               th:href="@{/query-expectations(page=${page.page - 1}, size=${page.size}, expectationId=${condition.expectationId}, expectationName=${condition.expectationName}, targetDbType=${condition.targetDbType}, enabledYn=${condition.enabledYn})}">이전</a>
+            <a th:each="p : ${page.pageNumbers}"
+               th:classappend="${p == page.page} ? ' active' : ''"
+               th:text="${p}"
+               th:href="@{/query-expectations(page=${p}, size=${page.size}, expectationId=${condition.expectationId}, expectationName=${condition.expectationName}, targetDbType=${condition.targetDbType}, enabledYn=${condition.enabledYn})}">1</a>
+            <a th:classappend="${!page.hasNext} ? ' disabled' : ''"
+               th:href="@{/query-expectations(page=${page.page + 1}, size=${page.size}, expectationId=${condition.expectationId}, expectationName=${condition.expectationName}, targetDbType=${condition.targetDbType}, enabledYn=${condition.enabledYn})}">다음</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>

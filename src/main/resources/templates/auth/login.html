@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 | Data Validator</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+</head>
+<body class="login-body">
+<div class="login-shell">
+    <section class="login-visual">
+        <div class="login-visual-inner">
+            <div class="brand-box login-brand">
+                <div class="brand-mark">DV</div>
+                <div>
+                    <div class="brand-title">Data Validator</div>
+                    <div class="brand-subtitle">정산 데이터 정합성 검증 콘솔</div>
+                </div>
+            </div>
+            <h1>정산 검증 모니터링 시스템</h1>
+            <p>배치 실행 이력, DB 간 데이터 비교, 기대값 검증, 이상 알림 현황을 통합 관리합니다.</p>
+            <div class="login-feature-list">
+                <span>DB 간 비교</span>
+                <span>기대값 검증</span>
+                <span>이상 알림</span>
+            </div>
+        </div>
+    </section>
+    <section class="login-panel">
+        <div class="login-card">
+            <h2>관리자 로그인</h2>
+            <p class="login-desc">운영 데이터 검증 콘솔 접근을 위해 로그인해주세요.</p>
+
+            <div class="alert alert-danger" th:if="${hasError}">
+                아이디 또는 비밀번호가 올바르지 않습니다.
+            </div>
+            <div class="alert alert-success" th:if="${hasLogout}">
+                정상적으로 로그아웃되었습니다.
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label for="username">아이디</label>
+                    <input type="text" id="username" name="username" autocomplete="username" autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">로그인</button>
+            </form>
+        </div>
+    </section>
+</div>
+</body>
+</html>

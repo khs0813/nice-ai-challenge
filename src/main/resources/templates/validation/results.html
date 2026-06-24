@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('검증 결과', ~{::content})}">
+<body>
+<div th:fragment="content">
+    <section class="search-card">
+        <form th:action="@{/validation-results}" method="get" class="search-form">
+            <input type="hidden" name="page" value="1">
+            <div class="form-row compact-row">
+                <div class="form-group">
+                    <label for="validationType">유형</label>
+                    <select id="validationType" name="validationType">
+                        <option value="">전체</option>
+                        <option value="PAIR" th:selected="${condition.validationType == 'PAIR'}">DB 간 비교</option>
+                        <option value="SINGLE" th:selected="${condition.validationType == 'SINGLE'}">기대값 검증</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="comparisonId">업무 번호</label>
+                    <input type="number" id="comparisonId" name="comparisonId" th:value="${condition.comparisonId}">
+                </div>
+                <div class="form-group">
+                    <label for="comparisonName">업무명</label>
+                    <input type="text" id="comparisonName" name="comparisonName" th:value="${condition.comparisonName}" maxlength="200">
+                </div>
+                <div class="form-group">
+                    <label for="resultStatus">결과</label>
+                    <select id="resultStatus" name="resultStatus">
+                        <option value="">전체</option>
+                        <option value="SUCCESS" th:selected="${condition.resultStatus == 'SUCCESS'}">성공</option>
+                        <option value="FAIL" th:selected="${condition.resultStatus == 'FAIL'}">불일치</option>
+                        <option value="ERROR" th:selected="${condition.resultStatus == 'ERROR'}">오류</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row compact-row">
+                <div class="form-group">
+                    <label for="requestedBy">요청자</label>
+                    <input type="text" id="requestedBy" name="requestedBy" th:value="${condition.requestedBy}" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="startDate">요청 시작일</label>
+                    <input type="date" id="startDate" name="startDate" th:value="${condition.startDate}">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">요청 종료일</label>
+                    <input type="date" id="endDate" name="endDate" th:value="${condition.endDate}">
+                </div>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary">검색</button>
+                <a th:href="@{/validation-results}" class="btn btn-secondary">초기화</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-section">
+        <div class="section-header">
+            <div>
+                <h2>검증 결과</h2>
+                <p><strong th:text="${page.totalCount}">0</strong>건이 조회되었습니다.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table wide-table">
+                <thead>
+                <tr>
+                    <th>유형</th>
+                    <th>결과 번호</th>
+                    <th>업무 번호</th>
+                    <th>업무명</th>
+                    <th>결과</th>
+                    <th>요청자</th>
+                    <th>요청일시</th>
+                    <th>소요 시간</th>
+                    <th>기준 건수</th>
+                    <th>비교 건수</th>
+                    <th>요약</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="result : ${page.items}">
+                    <td><span class="pill" th:text="${result.validationTypeLabel}">DB 간 비교</span></td>
+                    <td>
+                        <a th:if="${result.validationType == 'PAIR'}" th:href="@{/query-comparison-results/{id}(id=${result.resultId})}" th:text="${result.resultId}">1</a>
+                        <a th:if="${result.validationType == 'SINGLE'}" th:href="@{/query-expectation-results/{id}(id=${result.resultId})}" th:text="${result.resultId}">1</a>
+                    </td>
+                    <td th:text="${result.ruleId}">10</td>
+                    <td class="text-strong" th:text="${result.ruleName}">정산 검증</td>
+                    <td><span class="status-badge" th:classappend="${result.statusBadgeClass}" th:text="${result.resultStatusLabel}">성공</span></td>
+                    <td th:text="${result.requestedBy}">admin</td>
+                    <td th:text="${result.requestedAtText}">-</td>
+                    <td th:text="${result.durationText}">-</td>
+                    <td th:text="${result.leftRowCount != null ? result.leftRowCount : '-'}">-</td>
+                    <td th:text="${result.rightRowCount != null ? result.rightRowCount : '-'}">-</td>
+                    <td class="message-cell">
+                        <div class="markdown-source markdown-compact" data-render-markdown th:text="${result.summary != null ? result.summary : '-'}">-</div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(page.items)}">
+                    <td colspan="11" class="empty-cell">조회된 검증 결과가 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${page.totalCount > 0}">
+            <a th:classappend="${!page.hasPrevious} ? ' disabled' : ''"
+               th:href="@{/validation-results(page=${page.page - 1}, size=${page.size}, validationType=${condition.validationType}, comparisonId=${condition.comparisonId}, comparisonName=${condition.comparisonName}, resultStatus=${condition.resultStatus}, requestedBy=${condition.requestedBy}, startDate=${condition.startDate}, endDate=${condition.endDate})}">이전</a>
+            <a th:each="p : ${page.pageNumbers}"
+               th:classappend="${p == page.page} ? ' active' : ''"
+               th:text="${p}"
+               th:href="@{/validation-results(page=${p}, size=${page.size}, validationType=${condition.validationType}, comparisonId=${condition.comparisonId}, comparisonName=${condition.comparisonName}, resultStatus=${condition.resultStatus}, requestedBy=${condition.requestedBy}, startDate=${condition.startDate}, endDate=${condition.endDate})}">1</a>
+            <a th:classappend="${!page.hasNext} ? ' disabled' : ''"
+               th:href="@{/validation-results(page=${page.page + 1}, size=${page.size}, validationType=${condition.validationType}, comparisonId=${condition.comparisonId}, comparisonName=${condition.comparisonName}, resultStatus=${condition.resultStatus}, requestedBy=${condition.requestedBy}, startDate=${condition.startDate}, endDate=${condition.endDate})}">다음</a>
+        </div>
+    </section>
+</div>
+</body>
+</html>
