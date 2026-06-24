@@ -1,5 +1,6 @@
 package com.example.batchmonitor.service;
 
+import com.example.batchmonitor.config.QueryCompareProperties;
 import com.example.batchmonitor.dto.QueryExpectationDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,16 +18,19 @@ public class QueryExpectationScheduler {
     private static final Logger log = LoggerFactory.getLogger(QueryExpectationScheduler.class);
 
     private final QueryExpectationService queryExpectationService;
+    private final QueryCompareProperties queryCompareProperties;
     private final Set<Long> runningExpectationIds = ConcurrentHashMap.newKeySet();
 
-    public QueryExpectationScheduler(QueryExpectationService queryExpectationService) {
+    public QueryExpectationScheduler(QueryExpectationService queryExpectationService,
+                                     QueryCompareProperties queryCompareProperties) {
         this.queryExpectationService = queryExpectationService;
+        this.queryCompareProperties = queryCompareProperties;
     }
 
     @Scheduled(fixedDelayString = "${query.compare.scheduler.fixed-delay-ms:60000}")
     public void runDueExpectations() {
         List<QueryExpectationDto> expectations = queryExpectationService.findScheduledExpectations();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(queryCompareProperties.getSchedulerZoneId());
         for (QueryExpectationDto expectation : expectations) {
             Long expectationId = expectation.getExpectationId();
             if (expectationId == null || !runningExpectationIds.add(expectationId)) {

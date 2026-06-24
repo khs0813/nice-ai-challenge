@@ -1,5 +1,6 @@
 package com.example.batchmonitor.service;
 
+import com.example.batchmonitor.config.QueryCompareProperties;
 import com.example.batchmonitor.dto.PageResult;
 import com.example.batchmonitor.dto.JobExecutionDto;
 import com.example.batchmonitor.dto.QueryComparisonDto;
@@ -42,6 +43,7 @@ public class QueryComparisonService {
     private final ValidationNotificationService validationNotificationService;
     private final JobExecutionMapper jobExecutionMapper;
     private final OpenAiService openAiService;
+    private final QueryCompareProperties queryCompareProperties;
 
     public QueryComparisonService(QueryComparisonMapper queryComparisonMapper,
                                   DataSource dataSource,
@@ -49,7 +51,8 @@ public class QueryComparisonService {
                                   @Qualifier("oracleQueryJdbcTemplate") ObjectProvider<JdbcTemplate> oracleJdbcTemplateProvider,
                                   ValidationNotificationService validationNotificationService,
                                   JobExecutionMapper jobExecutionMapper,
-                                  OpenAiService openAiService) {
+                                  OpenAiService openAiService,
+                                  QueryCompareProperties queryCompareProperties) {
         this.queryComparisonMapper = queryComparisonMapper;
         JdbcTemplate defaultJdbcTemplate = new JdbcTemplate(dataSource);
         this.sybaseJdbcTemplate = sybaseJdbcTemplateProvider.getIfAvailable(new ObjectProviderFallback(defaultJdbcTemplate));
@@ -57,6 +60,7 @@ public class QueryComparisonService {
         this.validationNotificationService = validationNotificationService;
         this.jobExecutionMapper = jobExecutionMapper;
         this.openAiService = openAiService;
+        this.queryCompareProperties = queryCompareProperties;
     }
 
     public PageResult<QueryComparisonDto> findComparisons(QueryComparisonSearchConditionDto condition) {
@@ -106,8 +110,8 @@ public class QueryComparisonService {
             throw new IllegalArgumentException("중지된 DB 간 비교는 실행할 수 없습니다.");
         }
 
-        LocalDateTime requestedAt = LocalDateTime.now();
-        LocalDateTime startedAt = LocalDateTime.now();
+        LocalDateTime requestedAt = LocalDateTime.now(queryCompareProperties.getSchedulerZoneId());
+        LocalDateTime startedAt = LocalDateTime.now(queryCompareProperties.getSchedulerZoneId());
         QueryComparisonResultDto result = new QueryComparisonResultDto();
         result.setComparisonId(comparisonId);
         result.setRequestedBy(username);
@@ -146,7 +150,7 @@ public class QueryComparisonService {
             result.setErrorMessage(e.getMessage());
         }
 
-        result.setFinishedAt(LocalDateTime.now());
+        result.setFinishedAt(LocalDateTime.now(queryCompareProperties.getSchedulerZoneId()));
         enrichAiAnalysisIfNeeded(comparison, result);
         queryComparisonMapper.insertResult(result);
         notifyIfNeeded(comparison, result);
@@ -194,16 +198,20 @@ public class QueryComparisonService {
             return false;
         }
         QueryComparisonResultDto latestResult = findLatestResultByComparisonId(comparison.getComparisonId());
-        CronSequenceGenerator cron = new CronSequenceGenerator(comparison.getCronExpression());
+        ZoneId schedulerZoneId = queryCompareProperties.getSchedulerZoneId();
+        CronSequenceGenerator cron = new CronSequenceGenerator(
+                comparison.getCronExpression(),
+                java.util.TimeZone.getTimeZone(schedulerZoneId)
+        );
         LocalDateTime baseTime = latestResult != null && latestResult.getRequestedAt() != null
                 ? latestResult.getRequestedAt()
                 : comparison.getUpdatedAt() != null ? comparison.getUpdatedAt() : comparison.getCreatedAt();
         if (baseTime == null) {
             baseTime = now;
         }
-        Date base = Date.from(baseTime.atZone(ZoneId.systemDefault()).toInstant());
+        Date base = Date.from(baseTime.atZone(schedulerZoneId).toInstant());
         Date next = cron.next(base);
-        Date current = Date.from(now.atZone(ZoneId.systemDefault()).toInstant());
+        Date current = Date.from(now.atZone(schedulerZoneId).toInstant());
         return !next.after(current);
     }
 
@@ -426,9 +434,13 @@ public class QueryComparisonService {
     private String buildOracleBatchContext(QueryComparisonResultDto result) {
         SearchConditionDto condition = new SearchConditionDto();
         condition.setSize(5);
-        LocalDateTime base = result.getRequestedAt() != null ? result.getRequestedAt() : LocalDateTime.now();
+        LocalDateTime base = result.getRequestedAt() != null
+                ? result.getRequestedAt()
+                : LocalDateTime.now(queryCompareProperties.getSchedulerZoneId());
         condition.setStartDateTime(base.minusHours(6));
-        LocalDateTime end = result.getFinishedAt() != null ? result.getFinishedAt() : LocalDateTime.now();
+        LocalDateTime end = result.getFinishedAt() != null
+                ? result.getFinishedAt()
+                : LocalDateTime.now(queryCompareProperties.getSchedulerZoneId());
         condition.setEndDateTime(end.plusHours(1));
         condition.normalizePaging();
         List<JobExecutionDto> failedJobs = jobExecutionMapper.findFailedJobExecutions(condition);

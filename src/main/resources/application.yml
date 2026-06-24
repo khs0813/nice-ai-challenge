@@ -50,6 +50,11 @@ batch:
     # Spring Batch 5 PARAMETER_NAME/PARAMETER_TYPE/PARAMETER_VALUE 구조라면 modern으로 변경하세요.
     parameter-schema: legacy
 
+query:
+  compare:
+    scheduler:
+      time-zone: ${QUERY_COMPARE_SCHEDULER_TIME_ZONE:Asia/Seoul}
+
 openai:
   enabled: ${OPENAI_ENABLED:true}
   api-key: ${OPENAI_API_KEY:}

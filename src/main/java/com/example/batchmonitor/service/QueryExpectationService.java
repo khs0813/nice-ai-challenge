@@ -1,5 +1,6 @@
 package com.example.batchmonitor.service;
 
+import com.example.batchmonitor.config.QueryCompareProperties;
 import com.example.batchmonitor.dto.PageResult;
 import com.example.batchmonitor.dto.QueryExpectationDto;
 import com.example.batchmonitor.dto.QueryExpectationResultDto;
@@ -39,19 +40,22 @@ public class QueryExpectationService {
     private final JdbcTemplate oracleJdbcTemplate;
     private final ValidationNotificationService validationNotificationService;
     private final OpenAiService openAiService;
+    private final QueryCompareProperties queryCompareProperties;
 
     public QueryExpectationService(QueryExpectationMapper queryExpectationMapper,
                                    DataSource dataSource,
                                    @Qualifier("sybaseQueryJdbcTemplate") ObjectProvider<JdbcTemplate> sybaseJdbcTemplateProvider,
                                    @Qualifier("oracleQueryJdbcTemplate") ObjectProvider<JdbcTemplate> oracleJdbcTemplateProvider,
                                    ValidationNotificationService validationNotificationService,
-                                   OpenAiService openAiService) {
+                                   OpenAiService openAiService,
+                                   QueryCompareProperties queryCompareProperties) {
         this.queryExpectationMapper = queryExpectationMapper;
         JdbcTemplate defaultJdbcTemplate = new JdbcTemplate(dataSource);
         this.sybaseJdbcTemplate = sybaseJdbcTemplateProvider.getIfAvailable(new ObjectProviderFallback(defaultJdbcTemplate));
         this.oracleJdbcTemplate = oracleJdbcTemplateProvider.getIfAvailable(new ObjectProviderFallback(defaultJdbcTemplate));
         this.validationNotificationService = validationNotificationService;
         this.openAiService = openAiService;
+        this.queryCompareProperties = queryCompareProperties;
     }
 
     public PageResult<QueryExpectationDto> findExpectations(QueryExpectationSearchConditionDto condition) {
@@ -102,8 +106,8 @@ public class QueryExpectationService {
         QueryExpectationResultDto result = new QueryExpectationResultDto();
         result.setExpectationId(expectationId);
         result.setRequestedBy(username);
-        result.setRequestedAt(LocalDateTime.now());
-        result.setStartedAt(LocalDateTime.now());
+        result.setRequestedAt(LocalDateTime.now(queryCompareProperties.getSchedulerZoneId()));
+        result.setStartedAt(LocalDateTime.now(queryCompareProperties.getSchedulerZoneId()));
         result.setExpectedValue(expectation.getExpectedValue());
 
         try {
@@ -133,7 +137,7 @@ public class QueryExpectationService {
             result.setErrorMessage(e.getMessage());
         }
 
-        result.setFinishedAt(LocalDateTime.now());
+        result.setFinishedAt(LocalDateTime.now(queryCompareProperties.getSchedulerZoneId()));
         queryExpectationMapper.insertResult(result);
         notifyIfNeeded(expectation, result);
         return result.getResultId();
@@ -180,16 +184,20 @@ public class QueryExpectationService {
             return false;
         }
         QueryExpectationResultDto latestResult = findLatestResultByExpectationId(expectation.getExpectationId());
-        CronSequenceGenerator cron = new CronSequenceGenerator(expectation.getCronExpression());
+        ZoneId schedulerZoneId = queryCompareProperties.getSchedulerZoneId();
+        CronSequenceGenerator cron = new CronSequenceGenerator(
+                expectation.getCronExpression(),
+                java.util.TimeZone.getTimeZone(schedulerZoneId)
+        );
         LocalDateTime baseTime = latestResult != null && latestResult.getRequestedAt() != null
                 ? latestResult.getRequestedAt()
                 : expectation.getUpdatedAt() != null ? expectation.getUpdatedAt() : expectation.getCreatedAt();
         if (baseTime == null) {
             baseTime = now;
         }
-        Date base = Date.from(baseTime.atZone(ZoneId.systemDefault()).toInstant());
+        Date base = Date.from(baseTime.atZone(schedulerZoneId).toInstant());
         Date next = cron.next(base);
-        Date current = Date.from(now.atZone(ZoneId.systemDefault()).toInstant());
+        Date current = Date.from(now.atZone(schedulerZoneId).toInstant());
         return !next.after(current);
     }
 
