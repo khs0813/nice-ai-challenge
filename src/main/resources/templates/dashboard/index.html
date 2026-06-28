@@ -2,6 +2,108 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout('대시보드', ~{::content})}">
 <body>
 <div th:fragment="content">
+    <section class="ai-hero">
+        <div>
+            <p class="ai-eyebrow">OpenAI 기반 운영 리스크 예방</p>
+            <h2>정산 데이터 불일치를 자동 탐지하고 AI가 원인과 조치 방향을 요약합니다.</h2>
+        </div>
+        <div class="ai-hero-summary">
+            <strong>오늘 검증 현황</strong>
+            <span th:text="${'전체 ' + aiOverview.totalValidationCount + '건 | 정상 ' + aiOverview.successCount + '건 | 불일치 ' + aiOverview.mismatchCount + '건 | HIGH ' + aiOverview.highRiskCount + '건 | AI 분석 ' + aiOverview.aiAnalyzedCount + '건'}">전체 24건 | 정상 21건 | 불일치 3건 | HIGH 1건 | AI 분석 12건</span>
+        </div>
+    </section>
+
+    <section class="ai-kpi-grid">
+        <article class="ai-kpi-card">
+            <span>전체 검증</span>
+            <strong th:text="${aiOverview.totalValidationCount}">24</strong>
+        </article>
+        <article class="ai-kpi-card success">
+            <span>정상</span>
+            <strong th:text="${aiOverview.successCount}">21</strong>
+        </article>
+        <article class="ai-kpi-card warning">
+            <span>불일치</span>
+            <strong th:text="${aiOverview.mismatchCount}">3</strong>
+        </article>
+        <article class="ai-kpi-card danger">
+            <span>위험도 HIGH</span>
+            <strong th:text="${aiOverview.highRiskCount}">1</strong>
+        </article>
+        <article class="ai-kpi-card info">
+            <span>AI 분석 완료</span>
+            <strong th:text="${aiOverview.aiAnalyzedCount}">12</strong>
+        </article>
+        <article class="ai-kpi-card danger">
+            <span>AI 경고 SQL</span>
+            <strong th:text="${aiOverview.aiWarningSqlCount}">2</strong>
+        </article>
+    </section>
+
+    <section class="ai-feature-grid">
+        <article class="card-section ai-feature-card">
+            <div class="section-header">
+                <div>
+                    <h2>AI 불일치 요약</h2>
+                    <p th:text="${aiMismatchSummary.sample ? '최근 AI 요약이 없어 심사용 샘플을 표시합니다.' : '최근 불일치 결과의 AI 분석 요약입니다.'}">최근 불일치 결과의 AI 분석 요약입니다.</p>
+                </div>
+                <span class="severity-badge" th:classappend="${aiMismatchSummary.severityBadgeClass}" th:text="${aiMismatchSummary.severity}">HIGH</span>
+            </div>
+            <div class="ai-summary-block">
+                <span>요약</span>
+                <strong th:text="${aiMismatchSummary.summary}">Oracle 데이터가 Sybase 대비 6건 부족합니다.</strong>
+            </div>
+            <div class="ai-detail-grid">
+                <div>
+                    <span>원인 후보</span>
+                    <ul>
+                        <li th:each="cause : ${aiMismatchSummary.suspectedCauses}" th:text="${cause}">배치 적재 지연</li>
+                    </ul>
+                </div>
+                <div>
+                    <span>업무 영향</span>
+                    <p th:text="${aiMismatchSummary.businessImpact}">일 정산 금액 불일치 가능성이 있습니다.</p>
+                </div>
+            </div>
+            <div class="ai-action-box">
+                <span>권장 조치</span>
+                <p th:text="${aiMismatchSummary.recommendedAction}">거래번호 기준 누락 건 확인 후 재처리 여부를 검토하세요.</p>
+            </div>
+            <a class="btn btn-primary btn-sm" th:href="${aiMismatchSummary.detailUrl}">상세보기</a>
+        </article>
+
+        <article class="card-section ai-feature-card">
+            <div class="section-header">
+                <div>
+                    <h2>AI SQL 사전검증</h2>
+                    <p>룰 기반 1차 검증 후 OpenAI API가 설명과 개선 가이드를 생성합니다.</p>
+                </div>
+                <span class="severity-badge" th:classappend="${aiSqlValidation.statusBadgeClass}" th:text="${aiSqlValidation.statusLabel}">경고</span>
+            </div>
+            <div class="sql-status-row">
+                <div><span>정상</span><strong th:text="${aiSqlValidation.passCount}">0</strong></div>
+                <div><span>경고</span><strong th:text="${aiSqlValidation.warningCount}">3</strong></div>
+                <div><span>차단</span><strong th:text="${aiSqlValidation.blockedCount}">0</strong></div>
+            </div>
+            <div class="ai-detail-grid single">
+                <div>
+                    <span>감지 내용</span>
+                    <ul>
+                        <li th:each="issue : ${aiSqlValidation.detectedIssues}" th:text="${issue}">날짜 조건이 없어 대량 조회 가능성이 있습니다.</li>
+                    </ul>
+                </div>
+                <div>
+                    <span>개선 제안</span>
+                    <ul>
+                        <li th:each="recommendation : ${aiSqlValidation.recommendations}" th:text="${recommendation}">거래일자 조건과 비교 기준 키를 추가하세요.</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="ai-policy-note">금지 키워드, SELECT 여부, 다중 실행 제한은 서버 룰로 먼저 차단하고 AI는 이해하기 쉬운 설명과 개선 가이드만 제공합니다.</p>
+            <a class="btn btn-outline btn-sm" th:href="@{/query-comparisons}">상세보기</a>
+        </article>
+    </section>
+
     <section class="summary-grid">
         <a class="summary-card" th:href="@{/dashboard/jobs(type='total')}">
             <span class="summary-label">전체 배치 실행</span>
@@ -119,7 +221,7 @@
         <div class="section-header">
             <div>
                 <h2>최근 DB 간 비교 결과</h2>
-                <p>최근 실행된 비교 결과입니다. 결과 번호를 누르면 상세 내역으로 이동합니다.</p>
+                <p>최근 검증 이력입니다. AI 요약 여부와 위험도를 함께 확인합니다.</p>
             </div>
             <a class="btn btn-primary btn-sm" th:href="@{/query-comparison-results}">전체 보기</a>
         </div>
@@ -131,6 +233,9 @@
                     <th>검증 번호</th>
                     <th>비교명</th>
                     <th>결과</th>
+                    <th>위험도</th>
+                    <th>AI 요약</th>
+                    <th>AI 분석 상태</th>
                     <th>요청자</th>
                     <th>요청일시</th>
                     <th>수행 시간</th>
@@ -149,15 +254,20 @@
                             <span class="status-badge" th:classappend="${result.statusBadgeClass}" th:text="${result.resultStatusLabel}">일치</span>
                         </a>
                     </td>
+                    <td><span class="severity-badge compact" th:classappend="${result.riskBadgeClass}" th:text="${result.riskLevel}">LOW</span></td>
+                    <td th:text="${result.aiSummary ? '있음' : '없음'}">완료</td>
+                    <td><span class="status-badge" th:classappend="${result.aiAnalysisStatusBadgeClass}" th:text="${result.aiAnalysisStatusShortLabel}">완료</span></td>
                     <td th:text="${result.requestedBy}">admin</td>
                     <td th:text="${result.requestedAtText}">-</td>
                     <td th:text="${result.durationText}">-</td>
                     <td th:text="${result.sybaseRowCount != null ? result.sybaseRowCount : '-'}">0</td>
                     <td th:text="${result.oracleRowCount != null ? result.oracleRowCount : '-'}">0</td>
-                    <td class="message-cell" th:text="${result.messageSummary}">-</td>
+                    <td class="message-cell">
+                        <a th:href="@{/query-comparison-results/{id}(id=${result.resultId})}" th:text="${result.messageSummary}">-</a>
+                    </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(recentQueryResults)}">
-                    <td colspan="10" class="empty-cell">조회된 DB 간 비교 결과가 없습니다.</td>
+                    <td colspan="13" class="empty-cell">최근 AI 요약이 없습니다. 검증 실행 후 AI 불일치 요약과 위험도가 표시됩니다.</td>
                 </tr>
                 </tbody>
             </table>

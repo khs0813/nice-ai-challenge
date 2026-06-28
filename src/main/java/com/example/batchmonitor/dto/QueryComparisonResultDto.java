@@ -211,6 +211,75 @@ public class QueryComparisonResultDto {
         return aiAnalysisStatus;
     }
 
+    public String getAiAnalysisStatusShortLabel() {
+        if (aiAnalysisStatus == null) {
+            return "대기";
+        }
+        String normalized = aiAnalysisStatus.toUpperCase();
+        if ("SUCCESS".equals(normalized)) {
+            return "완료";
+        }
+        if ("ERROR".equals(normalized)) {
+            return "실패";
+        }
+        if ("SKIPPED".equals(normalized)) {
+            return "대기";
+        }
+        return aiAnalysisStatus;
+    }
+
+    public String getAiAnalysisStatusBadgeClass() {
+        if (aiAnalysisStatus == null) {
+            return "badge-unknown";
+        }
+        String normalized = aiAnalysisStatus.toUpperCase();
+        if ("SUCCESS".equals(normalized)) {
+            return "badge-completed";
+        }
+        if ("ERROR".equals(normalized)) {
+            return "badge-failed";
+        }
+        return "badge-unknown";
+    }
+
+    public boolean hasAiSummary() {
+        return aiAnalysis != null && !aiAnalysis.trim().isEmpty() && "SUCCESS".equalsIgnoreCase(aiAnalysisStatus);
+    }
+
+    public boolean isAiSummary() {
+        return hasAiSummary();
+    }
+
+    public String getRiskLevel() {
+        if ("ERROR".equalsIgnoreCase(resultStatus)) {
+            return "HIGH";
+        }
+        if (sybaseRowCount != null && oracleRowCount != null) {
+            long diff = Math.abs(sybaseRowCount - oracleRowCount);
+            if (diff >= 5) {
+                return "HIGH";
+            }
+            if (diff > 0) {
+                return "MEDIUM";
+            }
+        }
+        if ("FAIL".equalsIgnoreCase(resultStatus)) {
+            return "MEDIUM";
+        }
+        return "LOW";
+    }
+
+    public String getRiskBadgeClass() {
+        String riskLevel = getRiskLevel();
+        if ("HIGH".equals(riskLevel)) {
+            return "severity-high";
+        }
+        if ("MEDIUM".equals(riskLevel)) {
+            return "severity-medium";
+        }
+        return "severity-low";
+    }
+
     public String getResultStatusLabel() {
         return statusLabel(resultStatus);
     }

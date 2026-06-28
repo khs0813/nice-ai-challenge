@@ -1,6 +1,7 @@
 package com.example.batchmonitor.service;
 
 import com.example.batchmonitor.config.QueryCompareProperties;
+import com.example.batchmonitor.dto.AiSqlValidationResultDto;
 import com.example.batchmonitor.dto.PageResult;
 import com.example.batchmonitor.dto.JobExecutionDto;
 import com.example.batchmonitor.dto.QueryComparisonDto;
@@ -290,21 +291,68 @@ public class QueryComparisonService {
     }
 
     private void validateExecutableSelect(String query, String label) {
+        AiSqlValidationResultDto ruleResult = validateSqlRules(query, label);
+        if (ruleResult.isBlocked()) {
+            throw new IllegalArgumentException(label + " 검증 SQL 룰 기반 사전검증 차단: " + join(ruleResult.getDetectedIssues()));
+        }
+    }
+
+    private AiSqlValidationResultDto validateSqlRules(String query, String label) {
+        AiSqlValidationResultDto result = new AiSqlValidationResultDto();
         if (query == null) {
-            throw new IllegalArgumentException(label + " 검증 SQL은 필수입니다.");
+            result.setBlocked(true);
+            result.getDetectedIssues().add(label + " 검증 SQL은 필수입니다.");
+            result.getRecommendations().add("조회 목적의 SELECT SQL을 입력하세요.");
+            return result;
         }
-        String normalized = query.trim().toLowerCase();
+        String trimmed = query.trim();
+        String normalized = trimmed.toLowerCase();
         if (!normalized.startsWith("select") && !normalized.startsWith("with")) {
-            throw new IllegalArgumentException(label + " 검증 SQL은 SELECT 또는 WITH 조회문만 실행할 수 있습니다.");
+            result.setBlocked(true);
+            result.getDetectedIssues().add(label + " 검증 SQL은 SELECT 또는 WITH 조회문만 실행할 수 있습니다.");
+            result.getRecommendations().add("INSERT/UPDATE/DELETE 등 변경 SQL은 등록하지 말고 읽기 전용 SELECT로 검증 기준을 작성하세요.");
         }
-        String padded = " " + normalized + " ";
-        String[] banned = {" insert ", " update ", " delete ", " merge ", " drop ", " alter ",
-                " truncate ", " grant ", " revoke ", " execute ", " call "};
+        String withoutTrailingSemicolon = trimmed;
+        while (withoutTrailingSemicolon.endsWith(";")) {
+            withoutTrailingSemicolon = withoutTrailingSemicolon.substring(0, withoutTrailingSemicolon.length() - 1).trim();
+        }
+        if (withoutTrailingSemicolon.contains(";")) {
+            result.setBlocked(true);
+            result.getDetectedIssues().add(label + " 검증 SQL은 여러 문장을 한 번에 실행할 수 없습니다.");
+            result.getRecommendations().add("세미콜론으로 이어진 다중 SQL을 제거하고 단일 SELECT만 등록하세요.");
+        }
+        String[] banned = {"insert", "update", "delete", "drop", "alter", "truncate",
+                "merge", "create", "grant", "revoke", "execute", "call"};
         for (String keyword : banned) {
-            if (padded.contains(keyword)) {
-                throw new IllegalArgumentException(label + " 검증 SQL에 허용되지 않는 명령어가 포함되어 있습니다: " + keyword.trim());
+            if (containsWord(normalized, keyword)) {
+                result.setBlocked(true);
+                result.getDetectedIssues().add(label + " 검증 SQL에 허용되지 않는 명령어가 포함되어 있습니다: " + keyword.toUpperCase());
+                result.getRecommendations().add("정산 검증 등록 SQL은 읽기 전용 DB 계정에서 실행 가능한 SELECT만 허용합니다.");
             }
         }
+        if (!containsWord(normalized, "where")) {
+            result.setStatus("WARNING");
+            result.setRiskLevel("MEDIUM");
+            result.getDetectedIssues().add(label + " SQL에 WHERE 조건이 없어 대량 조회 가능성이 있습니다.");
+            result.getRecommendations().add("업무일자, 상태값, 비교 대상 범위를 제한하는 WHERE 조건을 추가하세요.");
+        }
+        if (!hasDateCondition(normalized)) {
+            result.setStatus("WARNING");
+            result.setRiskLevel("MEDIUM");
+            result.getDetectedIssues().add(label + " SQL에서 날짜 조건을 찾기 어렵습니다.");
+            result.getRecommendations().add("거래일자 또는 배치 기준일자 조건을 명시해 검증 범위를 고정하세요.");
+        }
+        if (normalized.matches("(?is).*select\\s+\\*.*")) {
+            result.setStatus("WARNING");
+            result.setRiskLevel("MEDIUM");
+            result.getDetectedIssues().add(label + " SQL에 SELECT *가 포함되어 결과 컬럼 변경에 취약합니다.");
+            result.getRecommendations().add("비교에 필요한 컬럼과 집계값을 명시적으로 선택하세요.");
+        }
+        if (result.isBlocked()) {
+            result.setStatus("BLOCKED");
+            result.setRiskLevel("HIGH");
+        }
+        return result;
     }
 
     private String normalizeSql(String query) {
@@ -386,13 +434,24 @@ public class QueryComparisonService {
             comparison.setAiSqlReviewSummary(null);
             return;
         }
+        AiSqlValidationResultDto sybaseRuleResult = validateSqlRules(comparison.getSybaseQuery(), "Sybase");
+        AiSqlValidationResultDto oracleRuleResult = validateSqlRules(comparison.getOracleQuery(), "Oracle");
         String prompt = "비교명: " + comparison.getComparisonName()
                 + "\n설명: " + nullSafe(comparison.getDescription())
-                + "\n\n[Sybase SQL]\n" + comparison.getSybaseQuery()
-                + "\n\n[Oracle SQL]\n" + comparison.getOracleQuery();
+                + "\n\n[서버 룰 기반 사전검증 결과]"
+                + "\nSybase status=" + sybaseRuleResult.getStatus()
+                + ", issues=" + join(sybaseRuleResult.getDetectedIssues())
+                + ", recommendations=" + join(sybaseRuleResult.getRecommendations())
+                + "\nOracle status=" + oracleRuleResult.getStatus()
+                + ", issues=" + join(oracleRuleResult.getDetectedIssues())
+                + ", recommendations=" + join(oracleRuleResult.getRecommendations())
+                + "\n\n[Sybase SQL 구조]\n" + maskSqlLiterals(comparison.getSybaseQuery())
+                + "\n\n[Oracle SQL 구조]\n" + maskSqlLiterals(comparison.getOracleQuery());
         String instructions = "너는 금융/정산 데이터 정합성 검증 SQL 리뷰어다. "
                 + "두 SQL이 같은 업무 기준을 비교하는지 점검한다. "
-                + "위험 DML/DDL, 날짜/상태 조건 누락, 양쪽 컬럼/집계 기준 차이, 조인/필터 불일치, 성능상 주의점을 검토한다. "
+                + "금지 키워드, SELECT 여부, 다중 실행 제한은 서버 룰 기반 검증이 1차 판단한다. "
+                + "OpenAI API는 룰 결과와 마스킹된 SQL 구조를 바탕으로 위험 요소를 사용자가 이해하기 쉬운 설명과 개선 가이드로 변환한다. "
+                + "최종 보안 판단처럼 표현하지 말고 날짜/상태 조건 누락, 양쪽 컬럼/집계 기준 차이, 조인/필터 불일치, 성능상 주의점을 검토한다. "
                 + "한국어로 작성하고, 첫 줄은 PASS 또는 WARN 또는 FAIL 중 하나로 시작한다. "
                 + "운영자가 바로 수정할 수 있게 5개 이하 bullet로 근거와 수정 제안을 제시한다.";
         String review = openAiService.generate(instructions, prompt);
@@ -473,8 +532,8 @@ public class QueryComparisonService {
                 + "\nOracle hash: " + nullSafe(result.getOracleResultHash())
                 + "\n불일치 요약: " + nullSafe(result.getMismatchSummary())
                 + "\n오류 메시지: " + nullSafe(result.getErrorMessage())
-                + "\n\n[Sybase SQL]\n" + comparison.getSybaseQuery()
-                + "\n\n[Oracle SQL]\n" + comparison.getOracleQuery()
+                + "\n\n[Sybase SQL 구조]\n" + maskSqlLiterals(comparison.getSybaseQuery())
+                + "\n\n[Oracle SQL 구조]\n" + maskSqlLiterals(comparison.getOracleQuery())
                 + "\n\n[Oracle 배치 상태/실패 이력]\n" + nullSafe(batchContext);
     }
 
@@ -527,6 +586,33 @@ public class QueryComparisonService {
 
     private String nullSafe(String value) {
         return value == null ? "-" : value;
+    }
+
+    private boolean containsWord(String value, String word) {
+        return value != null && value.matches("(?is).*\\b" + word + "\\b.*");
+    }
+
+    private boolean hasDateCondition(String normalizedSql) {
+        if (normalizedSql == null) {
+            return false;
+        }
+        return normalizedSql.contains("date")
+                || normalizedSql.contains("_dt")
+                || normalizedSql.contains("_ymd")
+                || normalizedSql.contains("yyyymmdd")
+                || normalizedSql.contains("business_day")
+                || normalizedSql.contains("trade_day")
+                || normalizedSql.contains("거래일")
+                || normalizedSql.contains("기준일");
+    }
+
+    private String maskSqlLiterals(String sql) {
+        if (sql == null) {
+            return "-";
+        }
+        String masked = sql.replaceAll("'([^']|'')*'", "'***'");
+        masked = masked.replaceAll("\\b\\d{6,}\\b", "###");
+        return limit(masked, 2000);
     }
 
     private void notifyIfNeeded(QueryComparisonDto comparison, QueryComparisonResultDto result) {

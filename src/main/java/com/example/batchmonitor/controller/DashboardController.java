@@ -30,6 +30,9 @@ public class DashboardController {
         List<DashboardValidationTrendDto> validationTrend = dashboardService.getValidationTrend();
         model.addAttribute("activeMenu", "dashboard");
         model.addAttribute("summary", dashboardService.getSummary());
+        model.addAttribute("aiOverview", dashboardService.getAiOverview());
+        model.addAttribute("aiMismatchSummary", dashboardService.getAiMismatchSummary());
+        model.addAttribute("aiSqlValidation", dashboardService.getAiSqlValidationResult());
         model.addAttribute("validationTrend", validationTrend);
         model.addAttribute("validationTrendTotalCount", dashboardService.getValidationTrendTotalCount(validationTrend));
         model.addAttribute("validationTypeSummary", dashboardService.getValidationTypeSummary());
