@@ -93,8 +93,8 @@
                     <td th:text="${result.durationText}">-</td>
                     <td th:text="${result.leftRowCount != null ? result.leftRowCount : '-'}">-</td>
                     <td th:text="${result.rightRowCount != null ? result.rightRowCount : '-'}">-</td>
-                    <td class="message-cell">
-                        <div class="markdown-source markdown-compact" data-render-markdown th:text="${result.summary != null ? result.summary : '-'}">-</div>
+                    <td class="message-cell validation-summary-cell">
+                        <div class="markdown-source markdown-compact" data-render-markdown th:text="${result.summaryText}">-</div>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(page.items)}">

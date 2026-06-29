@@ -17,6 +17,7 @@ import com.example.batchmonitor.mapper.DashboardMapper;
 import com.example.batchmonitor.mapper.QueryComparisonMapper;
 import com.example.batchmonitor.mapper.ValidationResultMapper;
 import com.example.batchmonitor.util.DateTimeUtils;
+import com.example.batchmonitor.util.DashboardMessageFormatter;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -341,7 +342,11 @@ public class DashboardService {
         AiMismatchSummaryDto summary = new AiMismatchSummaryDto();
         summary.setResultId(result.getResultId());
         summary.setSeverity(isHighRisk(result) ? "HIGH" : "MEDIUM");
-        summary.setSummary(defaultText(result.getMismatchSummary() != null ? result.getMismatchSummary() : result.getErrorMessage()));
+        summary.setSummary(DashboardMessageFormatter.formatMismatchSummary(
+                result.getSybaseRowCount(),
+                result.getOracleRowCount(),
+                result.getMismatchSummary() != null ? result.getMismatchSummary() : result.getErrorMessage()
+        ));
         List<String> causes = new ArrayList<String>();
         String analysis = result.getAiAnalysis() == null ? "" : result.getAiAnalysis();
         if (analysis.contains("배치") || analysis.contains("반영")) {
@@ -354,8 +359,10 @@ public class DashboardService {
             causes.add("동일 시간대 배치 상태와 비교 SQL 기준 확인 필요");
         }
         summary.setSuspectedCauses(causes);
-        summary.setBusinessImpact("정산 집계 또는 대상 건수 불일치로 후속 업무 금액 검증에 영향이 있을 수 있습니다.");
-        summary.setRecommendedAction(defaultText(result.getAiActionGuide() != null ? result.getAiActionGuide() : "누락 키와 배치 실행 로그를 확인한 뒤 재처리 여부를 검토하세요."));
+        summary.setBusinessImpact("정산 금액 불일치 또는 대상 건수 누락으로 이어질 가능성이 있습니다.");
+        summary.setRecommendedAction(defaultText(result.getAiActionGuide() != null ? result.getAiActionGuide() : "누락 고객 키와 Oracle 대상 테이블 반영 여부를 확인한 뒤 재처리를 검토하세요."));
+        LocalDateTime analysisTime = result.getFinishedAt() != null ? result.getFinishedAt() : result.getRequestedAt();
+        summary.setAnalysisTimeText(analysisTime == null ? null : DateTimeUtils.format(analysisTime));
         summary.setConfidence("MEDIUM");
         return summary;
     }
@@ -368,7 +375,7 @@ public class DashboardService {
             result.setStatus("WARNING");
             result.setRiskLevel("MEDIUM");
         }
-        result.getDetectedIssues().add(defaultText(extractFirstReviewSentence(comparison.getAiSqlReviewSummary())));
+        result.getDetectedIssues().add(defaultText(DashboardMessageFormatter.formatSqlValidationMessage(extractFirstReviewSentence(comparison.getAiSqlReviewSummary()))));
         result.getRecommendations().add("룰 기반 차단 항목과 날짜/조건/비교 기준 컬럼을 확인한 뒤 SQL을 다시 검토하세요.");
         return result;
     }
@@ -377,13 +384,15 @@ public class DashboardService {
         AiMismatchSummaryDto summary = new AiMismatchSummaryDto();
         summary.setSample(true);
         summary.setSeverity("HIGH");
-        summary.setSummary("Oracle 데이터가 Sybase 대비 6건 부족합니다.");
+        summary.setSummary("Sybase 기준 1,250건 중 Oracle에는 1,244건만 확인되어 6건의 누락 가능성이 있습니다.");
         List<String> causes = new ArrayList<String>();
         causes.add("배치 적재 지연");
-        causes.add("상태값 매핑 오류");
+        causes.add("Oracle 반영 누락");
+        causes.add("상태값 매핑 조건 차이");
         summary.setSuspectedCauses(causes);
-        summary.setBusinessImpact("일 정산 금액 불일치 가능성이 있습니다.");
-        summary.setRecommendedAction("거래번호 기준 누락 건 확인 후 재처리 여부를 검토하세요.");
+        summary.setBusinessImpact("정산 금액 불일치로 이어질 가능성이 있습니다.");
+        summary.setRecommendedAction("write skip 6건의 고객 키를 확인하고 Oracle 대상 테이블 누락 여부 점검 후 재처리를 검토하세요.");
+        summary.setAnalysisTimeText(DateTimeUtils.format(LocalDateTime.now()));
         summary.setConfidence("MEDIUM");
         return summary;
     }
@@ -396,8 +405,8 @@ public class DashboardService {
         result.getDetectedIssues().add("날짜 조건이 없어 대량 조회 가능성이 있습니다.");
         result.getDetectedIssues().add("비교 기준 컬럼이 명확하지 않습니다.");
         result.getDetectedIssues().add("Oracle/Sybase 결과 컬럼 수가 다를 수 있습니다.");
-        result.getRecommendations().add("거래일자 조건과 비교 기준 키를 추가하세요.");
-        result.getRecommendations().add("Sybase와 Oracle 쿼리의 결과 컬럼명과 컬럼 수를 맞추세요.");
+        result.getRecommendations().add("월 기준 차단 항목과 상태 조건 컬럼을 확인한 뒤 SQL을 다시 검토하세요.");
+        result.getRecommendations().add("Sybase와 Oracle 쿼리의 비교 기준 컬럼명과 컬럼 수를 맞추세요.");
         return result;
     }
 

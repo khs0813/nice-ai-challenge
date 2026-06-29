@@ -1,10 +1,10 @@
 .ai-hero {
     display: grid;
     grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
-    gap: 22px;
+    gap: 18px;
     align-items: center;
-    margin-bottom: 18px;
-    padding: 24px;
+    margin-bottom: 14px;
+    padding: 18px 20px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: #14213D;
@@ -12,7 +12,7 @@
 }
 
 .ai-eyebrow {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     color: #BFD8EC;
     font-size: 14px;
     font-weight: 900;
@@ -21,15 +21,15 @@
 .ai-hero h2 {
     margin-bottom: 0;
     color: var(--white);
-    font-size: 26px;
+    font-size: 23px;
     line-height: 1.35;
 }
 
 .ai-hero-summary {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 16px;
+    gap: 10px;
+    padding: 13px;
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: var(--radius);
     background: rgba(255, 255, 255, 0.08);
@@ -49,30 +49,38 @@
 .ai-hero-signal-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
 }
 
 .ai-hero-signal-grid span {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-height: 70px;
-    padding: 12px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 42px;
+    padding: 9px 10px;
     border-radius: var(--radius);
     background: rgba(255, 255, 255, 0.1);
 }
 
 .ai-hero-signal-grid b {
     color: var(--white);
-    font-size: 26px;
+    font-size: 20px;
     line-height: 1;
+}
+
+.ai-hero-signal-grid em {
+    color: rgba(255, 255, 255, 0.78);
+    font-style: normal;
+    font-size: 12px;
+    font-weight: 800;
 }
 
 .ai-kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(150px, 1fr));
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .dashboard-content .ai-hero > *,
@@ -86,8 +94,8 @@
 
 .ai-kpi-card {
     display: block;
-    min-height: 96px;
-    padding: 16px;
+    min-height: 92px;
+    padding: 15px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--white);
@@ -105,7 +113,7 @@ a.ai-kpi-card:hover {
 
 .ai-kpi-card span {
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 9px;
     color: var(--text-sub);
     font-size: 12px;
     font-weight: 900;
@@ -113,8 +121,16 @@ a.ai-kpi-card:hover {
 
 .ai-kpi-card strong {
     color: var(--primary-navy);
-    font-size: 28px;
+    font-size: 25px;
     line-height: 1;
+}
+
+.ai-kpi-card small {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-sub);
+    font-size: 11px;
+    font-weight: 800;
 }
 
 .ai-kpi-card.success strong {
@@ -137,13 +153,13 @@ a.ai-kpi-card:hover {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .ai-feature-card {
     display: flex;
     flex-direction: column;
-    min-height: 360px;
+    min-height: 340px;
     border-color: var(--border);
 }
 
@@ -191,8 +207,8 @@ a.ai-kpi-card:hover {
 
 .ai-summary-block,
 .ai-action-box {
-    margin-bottom: 16px;
-    padding: 15px;
+    margin-bottom: 14px;
+    padding: 14px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface-subtle);
@@ -215,11 +231,18 @@ a.ai-kpi-card:hover {
     line-height: 1.45;
 }
 
+.analysis-time {
+    margin-top: 5px;
+    color: var(--text-sub);
+    font-size: 12px;
+    font-weight: 800;
+}
+
 .ai-detail-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .ai-detail-grid.single {
@@ -245,7 +268,7 @@ a.ai-kpi-card:hover {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .sql-status-row div {
@@ -261,7 +284,7 @@ a.ai-kpi-card:hover {
 }
 
 .ai-policy-note {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     padding: 12px;
     border-left: 4px solid var(--primary-blue);
     background: var(--surface-subtle);
@@ -278,7 +301,7 @@ a.ai-kpi-card:hover {
 }
 
 .dashboard-support-section {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .dashboard-support-section .summary-grid {
@@ -290,8 +313,8 @@ a.ai-kpi-card:hover {
 }
 
 .ops-summary-grid .summary-card {
-    min-height: 108px;
-    padding: 17px;
+    min-height: 100px;
+    padding: 15px;
     background: var(--surface-subtle);
 }
 
@@ -332,7 +355,7 @@ a.ai-kpi-card:hover {
     display: block;
     position: relative;
     overflow: hidden;
-    min-height: 122px;
+    min-height: 112px;
     background: var(--white);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -354,12 +377,12 @@ a.summary-card:hover {
     color: var(--text-sub);
     font-size: 13px;
     font-weight: 800;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .summary-card strong {
     color: var(--primary-navy);
-    font-size: 29px;
+    font-size: 27px;
     line-height: 1.1;
     letter-spacing: 0;
 }
@@ -388,7 +411,11 @@ a.summary-card:hover {
     display: grid;
     grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.75fr);
     gap: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+}
+
+.dashboard-message-cell {
+    line-height: 1.5;
 }
 
 .chart-card {

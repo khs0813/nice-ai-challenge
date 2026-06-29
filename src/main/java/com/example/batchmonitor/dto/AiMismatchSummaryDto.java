@@ -11,6 +11,7 @@ public class AiMismatchSummaryDto {
     private List<String> suspectedCauses = new ArrayList<String>();
     private String businessImpact;
     private String recommendedAction;
+    private String analysisTimeText;
     private String confidence = "MEDIUM";
     private boolean sample;
 
@@ -60,6 +61,14 @@ public class AiMismatchSummaryDto {
 
     public void setRecommendedAction(String recommendedAction) {
         this.recommendedAction = recommendedAction;
+    }
+
+    public String getAnalysisTimeText() {
+        return analysisTimeText;
+    }
+
+    public void setAnalysisTimeText(String analysisTimeText) {
+        this.analysisTimeText = analysisTimeText;
     }
 
     public String getConfidence() {

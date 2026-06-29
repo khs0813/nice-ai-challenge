@@ -1,6 +1,7 @@
 package com.example.batchmonitor.dto;
 
 import com.example.batchmonitor.util.DateTimeUtils;
+import com.example.batchmonitor.util.DashboardMessageFormatter;
 
 import java.time.LocalDateTime;
 
@@ -187,7 +188,10 @@ public class QueryComparisonResultDto {
 
     public String getMessageSummary() {
         String message = mismatchSummary != null ? mismatchSummary : errorMessage;
-        return DateTimeUtils.summarize(message, 120);
+        if (mismatchSummary != null) {
+            return DashboardMessageFormatter.formatMismatchSummary(sybaseRowCount, oracleRowCount, mismatchSummary);
+        }
+        return DashboardMessageFormatter.formatErrorMessageForUser(message);
     }
 
     public String getAiAnalysisSummary() {
@@ -195,37 +199,11 @@ public class QueryComparisonResultDto {
     }
 
     public String getAiAnalysisStatusLabel() {
-        if (aiAnalysisStatus == null) {
-            return "-";
-        }
-        String normalized = aiAnalysisStatus.toUpperCase();
-        if ("SUCCESS".equals(normalized)) {
-            return "분석 완료";
-        }
-        if ("SKIPPED".equals(normalized)) {
-            return "분석 안 함";
-        }
-        if ("ERROR".equals(normalized)) {
-            return "분석 실패";
-        }
-        return aiAnalysisStatus;
+        return DashboardMessageFormatter.formatAiStatusLabel(aiAnalysisStatus);
     }
 
     public String getAiAnalysisStatusShortLabel() {
-        if (aiAnalysisStatus == null) {
-            return "대기";
-        }
-        String normalized = aiAnalysisStatus.toUpperCase();
-        if ("SUCCESS".equals(normalized)) {
-            return "완료";
-        }
-        if ("ERROR".equals(normalized)) {
-            return "실패";
-        }
-        if ("SKIPPED".equals(normalized)) {
-            return "대기";
-        }
-        return aiAnalysisStatus;
+        return DashboardMessageFormatter.formatAiStatusLabel(aiAnalysisStatus);
     }
 
     public String getAiAnalysisStatusBadgeClass() {

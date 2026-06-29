@@ -4,36 +4,40 @@
 <div th:fragment="content">
     <section class="ai-hero">
         <div>
-            <p class="ai-eyebrow">AI 기반 운영 리스크 예방</p>
-            <h2>정산 데이터 불일치를 탐지하고, AI가 원인 후보와 조치 방향을 즉시 제안합니다.</h2>
+            <p class="ai-eyebrow">AI 기반 정산 운영 리스크 예방</p>
+            <h2>정산 데이터 불일치를 자동 탐지하고, AI가 원인 후보·업무 영향·조치 방향을 즉시 제안합니다.</h2>
         </div>
         <div class="ai-hero-summary">
             <strong>오늘 AI 검증 신호</strong>
             <div class="ai-hero-signal-grid">
-                <span><b th:text="${aiOverview.mismatchCount}">3</b>불일치</span>
-                <span><b th:text="${aiOverview.highRiskCount}">1</b>HIGH 위험</span>
-                <span><b th:text="${aiOverview.aiAnalyzedCount}">12</b>AI 분석</span>
-                <span><b th:text="${aiOverview.aiWarningSqlCount}">2</b>SQL 경고</span>
+                <span><em>불일치 탐지</em><b th:text="${aiOverview.mismatchCount + '건'}">3건</b></span>
+                <span><em>HIGH 위험</em><b th:text="${aiOverview.highRiskCount + '건'}">1건</b></span>
+                <span><em>AI 요약 완료</em><b th:text="${aiOverview.aiAnalyzedCount + '건'}">12건</b></span>
+                <span><em>SQL 사전경고</em><b th:text="${aiOverview.aiWarningSqlCount + '건'}">2건</b></span>
             </div>
         </div>
     </section>
 
     <section class="ai-kpi-grid">
         <a class="ai-kpi-card" th:href="@{/validation-results(startDate=${today}, endDate=${today})}">
-            <span>전체 검증</span>
-            <strong th:text="${aiOverview.totalValidationCount}">24</strong>
+            <span>오늘 전체 검증</span>
+            <strong th:text="${aiOverview.totalValidationCount + '건'}">24건</strong>
+            <small>오늘 기준</small>
         </a>
         <a class="ai-kpi-card warning" th:href="@{/validation-results(resultStatus='ISSUE', startDate=${today}, endDate=${today})}">
-            <span>불일치 탐지</span>
-            <strong th:text="${aiOverview.mismatchCount}">3</strong>
+            <span>오늘 불일치</span>
+            <strong th:text="${aiOverview.mismatchCount + '건'}">3건</strong>
+            <small>오늘 기준</small>
         </a>
         <a class="ai-kpi-card danger" th:href="@{/query-comparison-results(riskLevel='HIGH')}">
-            <span>위험도 HIGH</span>
-            <strong th:text="${aiOverview.highRiskCount}">1</strong>
+            <span>HIGH 위험</span>
+            <strong th:text="${aiOverview.highRiskCount + '건'}">1건</strong>
+            <small>최근 실행 기준</small>
         </a>
         <a class="ai-kpi-card info" th:href="@{/query-comparison-results(aiAnalysisStatus='SUCCESS')}">
             <span>AI 분석 완료</span>
-            <strong th:text="${aiOverview.aiAnalyzedCount}">12</strong>
+            <strong th:text="${aiOverview.aiAnalyzedCount + '건'}">12건</strong>
+            <small>최근 실행 기준</small>
         </a>
     </section>
 
@@ -42,7 +46,8 @@
             <div class="section-header">
                 <div>
                     <h2>AI 불일치 요약</h2>
-                    <p th:text="${aiMismatchSummary.sample ? '최근 탐지 사례 기반 AI 분석 예시입니다.' : '최근 불일치 결과의 AI 분석 요약입니다.'}">최근 불일치 결과의 AI 분석 요약입니다.</p>
+                    <p th:text="${aiMismatchSummary.sample ? '최근 탐지 사례 기반 AI 분석 예시입니다.' : '최근 불일치 결과를 AI가 분석했습니다.'}">최근 불일치 결과를 AI가 분석했습니다.</p>
+                    <p class="analysis-time" th:if="${aiMismatchSummary.analysisTimeText != null}" th:text="${'최근 분석: ' + aiMismatchSummary.analysisTimeText}">최근 분석: 2026-06-29 22:41</p>
                 </div>
                 <span class="severity-badge" th:classappend="${aiMismatchSummary.severityBadgeClass}" th:text="${aiMismatchSummary.severity}">HIGH</span>
             </div>
@@ -66,14 +71,14 @@
                 <span>권장 조치</span>
                 <p th:text="${aiMismatchSummary.recommendedAction}">거래번호 기준 누락 건 확인 후 재처리 여부를 검토하세요.</p>
             </div>
-            <a class="btn btn-primary btn-sm" th:href="${aiMismatchSummary.detailUrl}">상세보기</a>
+            <a class="btn btn-primary btn-sm" th:href="${aiMismatchSummary.detailUrl}">AI 분석 상세보기</a>
         </article>
 
         <article class="card-section ai-feature-card">
             <div class="section-header">
                 <div>
                     <h2>AI SQL 사전검증</h2>
-                    <p>룰 기반 1차 검증 후 OpenAI API가 설명과 개선 가이드를 생성합니다.</p>
+                    <p>룰 기반 1차 검증 후 OpenAI API가 설명과 개선 가이드를 생성했습니다.</p>
                 </div>
                 <span class="severity-badge" th:classappend="${aiSqlValidation.statusBadgeClass}" th:text="${aiSqlValidation.statusLabel}">경고</span>
             </div>
@@ -96,8 +101,8 @@
                     </ul>
                 </div>
             </div>
-            <p class="ai-policy-note">금지 키워드, SELECT 여부, 다중 실행 제한은 서버 룰로 먼저 차단하고 AI는 이해하기 쉬운 설명과 개선 가이드만 제공합니다.</p>
-            <a class="btn btn-outline btn-sm" th:href="@{/query-comparisons}">상세보기</a>
+            <p class="ai-policy-note">금지 키워드, SELECT 여부, 다중 실행 제한은 서버 룰로 먼저 차단하고 AI는 이해하기 쉬운 설명과 개선 가이드만 제공합니다. OpenAI API에는 원천 데이터 전체가 아닌 불일치 건수, 컬럼명, 마스킹된 키, 오류 유형 등 최소 정보만 전달합니다.</p>
+            <a class="btn btn-outline btn-sm" th:href="@{/query-comparisons}">SQL 검증 상세보기</a>
         </article>
     </section>
 
@@ -105,7 +110,7 @@
         <div class="section-header compact-header">
             <div>
                 <h2>운영 근거 지표</h2>
-                <p>AI 판단과 함께 확인하는 배치 실행 및 검증 처리 현황입니다.</p>
+                <p>AI 판단과 함께 확인하는 전체·오늘·최근 7일 기준 운영 현황입니다.</p>
             </div>
         </div>
         <div class="summary-grid ops-summary-grid">
@@ -114,7 +119,7 @@
                 <strong th:text="${summary.totalJobCount}">0</strong>
             </a>
             <a class="summary-card" th:href="@{/dashboard/jobs(type='today')}">
-                <span class="summary-label">오늘 실행</span>
+                <span class="summary-label">오늘 배치 실행</span>
                 <strong th:text="${summary.todayJobCount}">0</strong>
             </a>
             <a class="summary-card success-card" th:href="@{/dashboard/jobs(type='completed')}">
@@ -154,11 +159,11 @@
                 <div>
                     <h2>최근 7일 검증 결과</h2>
                     <p>
-                        <span>일자별 성공, 불일치, 오류 건수입니다.</span>
+                        <span>최근 7일 기준 일자별 성공, 불일치, 오류 건수입니다.</span>
                         <strong th:text="${'총 ' + validationTrendTotalCount + '건'}">총 0건</strong>
                     </p>
                 </div>
-                <a class="btn btn-outline btn-sm" th:href="@{/validation-results}">상세 보기</a>
+                <a class="btn btn-outline btn-sm" th:href="@{/validation-results}">최근 결과 상세보기</a>
             </div>
             <div class="chart-legend">
                 <span><i class="legend-dot success-dot"></i>성공</span>
@@ -213,9 +218,9 @@
                                 <i class="legend-dot" th:classappend="${stat.index == 0 ? ' pair-dot' : ' single-dot'}"></i>
                                 <span th:text="${item.typeLabel}">이기종 DB 검증</span>
                             </span>
-                            <strong th:text="${item.count + '건'}">0건</strong>
+                            <strong th:text="${item.count + '건 / ' + item.percentText}">0건 / 0%</strong>
                         </div>
-                        <div class="type-percent" th:text="${item.percentText}">0%</div>
+                        <div class="type-percent">최근 7일 기준</div>
                     </div>
                 </div>
             </div>
@@ -262,12 +267,12 @@
                             <span>Oracle <b th:text="${result.oracleRowCount != null ? result.oracleRowCount : '-'}">0</b></span>
                         </div>
                     </td>
-                    <td class="message-cell">
+                    <td class="message-cell dashboard-message-cell">
                         <a th:href="@{/query-comparison-results/{id}(id=${result.resultId})}" th:text="${result.messageSummary}">-</a>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(recentQueryResults)}">
-                    <td colspan="8" class="empty-cell">최근 AI 요약이 없습니다. 검증 실행 후 AI 불일치 요약과 위험도가 표시됩니다.</td>
+                    <td colspan="8" class="empty-cell">최근 AI 요약이 없습니다. 검증 실행 후 AI가 원인 후보와 조치 방향을 요약합니다.</td>
                 </tr>
                 </tbody>
             </table>

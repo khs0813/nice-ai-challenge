@@ -1,6 +1,7 @@
 package com.example.batchmonitor.dto;
 
 import com.example.batchmonitor.util.DateTimeUtils;
+import com.example.batchmonitor.util.DashboardMessageFormatter;
 
 import java.time.LocalDateTime;
 
@@ -124,7 +125,10 @@ public class ValidationResultDto {
     }
 
     public String getSummaryText() {
-        return DateTimeUtils.summarize(summary, 120);
+        if ("PAIR".equalsIgnoreCase(validationType)) {
+            return DashboardMessageFormatter.formatMismatchSummary(leftRowCount, rightRowCount, summary);
+        }
+        return DashboardMessageFormatter.formatErrorMessageForUser(summary);
     }
 
     public String getValidationTypeLabel() {
