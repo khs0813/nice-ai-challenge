@@ -4,16 +4,16 @@
     gap: 22px;
     align-items: center;
     margin-bottom: 18px;
-    padding: 26px;
-    border: 1px solid rgba(0, 91, 172, 0.22);
+    padding: 24px;
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: linear-gradient(135deg, #071B36 0%, #0B2345 48%, #005BAC 100%);
-    box-shadow: 0 18px 42px rgba(11, 35, 69, 0.16);
+    background: #14213D;
+    box-shadow: var(--shadow);
 }
 
 .ai-eyebrow {
     margin-bottom: 8px;
-    color: #A9D0FF;
+    color: #BFD8EC;
     font-size: 14px;
     font-weight: 900;
 }
@@ -32,7 +32,7 @@
     padding: 16px;
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: var(--radius);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .ai-hero-summary strong {
@@ -59,7 +59,7 @@
     min-height: 70px;
     padding: 12px;
     border-radius: var(--radius);
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .ai-hero-signal-grid b {
@@ -88,10 +88,10 @@
 }
 
 a.ai-kpi-card:hover {
-    border-color: #BFD1E7;
-    box-shadow: 0 14px 34px rgba(11, 35, 69, 0.12);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-raised);
     text-decoration: none;
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 .ai-kpi-card span {
@@ -134,12 +134,12 @@ a.ai-kpi-card:hover {
 .ai-feature-card {
     display: flex;
     flex-direction: column;
-    min-height: 390px;
-    border-color: #C9D9EC;
+    min-height: 360px;
+    border-color: var(--border);
 }
 
 .ai-feature-card:first-child {
-    box-shadow: 0 16px 38px rgba(11, 35, 69, 0.1);
+    box-shadow: var(--shadow);
 }
 
 .ai-feature-card > .btn {
@@ -166,18 +166,18 @@ a.ai-kpi-card:hover {
 }
 
 .severity-high {
-    color: #991B1B;
-    background: #FEE2E2;
+    color: #9E2F2A;
+    background: #FCEDEA;
 }
 
 .severity-medium {
-    color: #92400E;
-    background: #FEF3C7;
+    color: #8A5A18;
+    background: #FFF4D6;
 }
 
 .severity-low {
-    color: #0B7A32;
-    background: #DCFCE7;
+    color: #0F6A3C;
+    background: #E9F6EF;
 }
 
 .ai-summary-block,
@@ -186,7 +186,7 @@ a.ai-kpi-card:hover {
     padding: 15px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: #F8FAFD;
+    background: var(--surface-subtle);
 }
 
 .ai-summary-block span,
@@ -243,7 +243,7 @@ a.ai-kpi-card:hover {
     padding: 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: #F8FAFD;
+    background: var(--surface-subtle);
 }
 
 .sql-status-row strong {
@@ -255,7 +255,7 @@ a.ai-kpi-card:hover {
     margin-bottom: 16px;
     padding: 12px;
     border-left: 4px solid var(--primary-blue);
-    background: #F8FAFD;
+    background: var(--surface-subtle);
     color: var(--text-sub);
     font-size: 12px;
     font-weight: 700;
@@ -263,7 +263,7 @@ a.ai-kpi-card:hover {
 
 .summary-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     gap: 16px;
     margin-bottom: 20px;
 }
@@ -283,7 +283,7 @@ a.ai-kpi-card:hover {
 .ops-summary-grid .summary-card {
     min-height: 108px;
     padding: 17px;
-    background: #FBFCFE;
+    background: var(--surface-subtle);
 }
 
 .comparison-compact-table {
@@ -321,37 +321,10 @@ a.ai-kpi-card:hover {
 }
 
 a.summary-card:hover {
-    border-color: #BFD1E7;
-    box-shadow: 0 14px 34px rgba(11, 35, 69, 0.12);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-raised);
     text-decoration: none;
-    transform: translateY(-2px);
-}
-
-.summary-card::after {
-    content: "";
-    position: absolute;
-    width: 92px;
-    height: 92px;
-    right: -28px;
-    bottom: -32px;
-    border-radius: 50%;
-    background: var(--light-blue);
-}
-
-.summary-card.success-card::after {
-    background: #E7F7EC;
-}
-
-.summary-card.danger-card::after {
-    background: #FDECEC;
-}
-
-.summary-card.warning-card::after {
-    background: #FFF7E6;
-}
-
-.summary-card.info-card::after {
-    background: #EAF3FF;
+    transform: translateY(-1px);
 }
 
 .summary-label {
@@ -363,12 +336,10 @@ a.summary-card:hover {
 }
 
 .summary-card strong {
-    position: relative;
-    z-index: 1;
     color: var(--primary-navy);
     font-size: 29px;
     line-height: 1.1;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
 }
 
 .summary-card.success-card strong {
@@ -466,7 +437,7 @@ a.summary-card:hover {
     gap: 4px;
     padding: 10px 8px;
     border-radius: 8px;
-    background: #F8FAFD;
+    background: var(--surface-subtle);
     border: 1px solid var(--border);
 }
 
@@ -688,12 +659,21 @@ a.summary-card:hover {
 
 @media (max-width: 700px) {
     .ai-kpi-grid,
-    .ai-detail-grid {
+    .ai-detail-grid,
+    .sql-status-row {
         grid-template-columns: 1fr;
+    }
+
+    .ai-hero {
+        padding: 20px;
     }
 
     .ai-hero h2 {
         font-size: 20px;
+    }
+
+    .ai-hero-signal-grid {
+        grid-template-columns: 1fr;
     }
 
     .summary-grid,

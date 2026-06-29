@@ -11,6 +11,7 @@
 </head>
 <body>
 <div class="app-wrapper">
+    <div class="mobile-scrim" data-close-sidebar aria-hidden="true"></div>
     <aside class="sidebar">
         <a class="brand-box brand-link" th:href="@{/dashboard}" aria-label="대시보드로 이동">
             <div class="brand-mark">DV</div>
@@ -66,12 +67,17 @@
             </div>
         </nav>
         <div class="sidebar-footer">
-            <span>운영 데이터 조회 전용</span>
+            <span>배치·정산 데이터 검증</span>
         </div>
     </aside>
 
     <div class="main-wrapper">
         <header class="top-header">
+            <button type="button" class="mobile-menu-button" data-sidebar-toggle aria-label="메뉴 열기" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div>
                 <h1 th:text="${pageTitle}">대시보드</h1>
                 <p>배치 실행 현황과 정산 데이터 검증 결과를 확인합니다.</p>

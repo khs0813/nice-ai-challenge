@@ -1,4 +1,12 @@
 (function () {
+    function setSidebarOpen(isOpen) {
+        document.body.classList.toggle('sidebar-open', isOpen);
+        document.querySelectorAll('[data-sidebar-toggle]').forEach(function (button) {
+            button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            button.setAttribute('aria-label', isOpen ? '메뉴 닫기' : '메뉴 열기');
+        });
+    }
+
     function toggleTarget(button) {
         var targetId = button.getAttribute('data-toggle-target');
         if (!targetId) {
@@ -222,6 +230,17 @@
     document.querySelectorAll('[data-render-markdown]').forEach(renderMarkdownBlock);
 
     document.addEventListener('click', function (event) {
+        var sidebarToggle = event.target.closest('[data-sidebar-toggle]');
+        if (sidebarToggle) {
+            setSidebarOpen(!document.body.classList.contains('sidebar-open'));
+            return;
+        }
+
+        if (event.target.closest('[data-close-sidebar]')) {
+            setSidebarOpen(false);
+            return;
+        }
+
         var button = event.target.closest('[data-toggle-target]');
         if (button) {
             toggleTarget(button);
@@ -232,6 +251,12 @@
         var checkbox = event.target.closest('[data-sync-checkbox]');
         if (checkbox) {
             syncCheckbox(checkbox);
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            setSidebarOpen(false);
         }
     });
 })();

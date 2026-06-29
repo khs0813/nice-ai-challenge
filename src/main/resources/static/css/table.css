@@ -2,7 +2,8 @@
     width: 100%;
     overflow-x: auto;
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: var(--radius);
+    background: var(--white);
 }
 
 .data-table {
@@ -14,6 +15,99 @@
 
 .wide-table {
     min-width: 1080px;
+}
+
+.validation-results-table {
+    min-width: 0;
+    table-layout: fixed;
+}
+
+.failed-jobs-table {
+    min-width: 0;
+    table-layout: fixed;
+}
+
+.failed-jobs-table th:nth-child(1),
+.failed-jobs-table td:nth-child(1) {
+    width: 78px;
+}
+
+.failed-jobs-table th:nth-child(2),
+.failed-jobs-table td:nth-child(2) {
+    width: 150px;
+}
+
+.failed-jobs-table th:nth-child(3),
+.failed-jobs-table td:nth-child(3) {
+    width: 110px;
+}
+
+.failed-jobs-table th:nth-child(4),
+.failed-jobs-table td:nth-child(4) {
+    width: 82px;
+}
+
+.failed-jobs-table th:nth-child(6),
+.failed-jobs-table td:nth-child(6),
+.failed-jobs-table th:nth-child(7),
+.failed-jobs-table td:nth-child(7) {
+    width: 170px;
+}
+
+.failed-jobs-table th:nth-child(8),
+.failed-jobs-table td:nth-child(8) {
+    width: 90px;
+}
+
+.failed-jobs-table th:nth-child(9),
+.failed-jobs-table td:nth-child(9) {
+    width: 74px;
+}
+
+.validation-results-table th:nth-child(1),
+.validation-results-table td:nth-child(1) {
+    width: 92px;
+}
+
+.validation-results-table th:nth-child(2),
+.validation-results-table td:nth-child(2),
+.validation-results-table th:nth-child(3),
+.validation-results-table td:nth-child(3) {
+    width: 78px;
+}
+
+.validation-results-table th:nth-child(4),
+.validation-results-table td:nth-child(4) {
+    width: 140px;
+}
+
+.validation-results-table th:nth-child(5),
+.validation-results-table td:nth-child(5) {
+    width: 96px;
+}
+
+.validation-results-table th:nth-child(6),
+.validation-results-table td:nth-child(6) {
+    width: 92px;
+}
+
+.validation-results-table th:nth-child(7),
+.validation-results-table td:nth-child(7) {
+    width: 138px;
+}
+
+.validation-results-table th:nth-child(8),
+.validation-results-table td:nth-child(8),
+.validation-results-table th:nth-child(9),
+.validation-results-table td:nth-child(9),
+.validation-results-table th:nth-child(10),
+.validation-results-table td:nth-child(10) {
+    width: 82px;
+}
+
+.validation-results-table th:nth-child(11),
+.validation-results-table td:nth-child(11) {
+    width: auto;
 }
 
 .comparison-results-table {
@@ -65,7 +159,7 @@
 
 .data-table th,
 .data-table td {
-    padding: 13px 14px;
+    padding: 11px 13px;
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     text-align: left;
@@ -78,7 +172,7 @@
 }
 
 .data-table th {
-    background: #F8FAFD;
+    background: var(--surface-subtle);
     color: var(--primary-navy);
     font-size: 12px;
     text-transform: none;
@@ -92,12 +186,46 @@
     white-space: nowrap;
 }
 
+.validation-results-table td {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.failed-jobs-table td {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.validation-results-table td:nth-child(4),
+.validation-results-table td:nth-child(11) {
+    white-space: normal;
+}
+
+.failed-jobs-table td:nth-child(2),
+.failed-jobs-table td:nth-child(5) {
+    white-space: normal;
+}
+
+.validation-results-table .message-cell {
+    max-width: none;
+}
+
+.failed-jobs-table .message-summary {
+    max-width: none;
+}
+
+.validation-results-table .markdown-message.markdown-compact {
+    min-width: 0;
+    max-height: none;
+    overflow: visible;
+}
+
 .data-table tbody tr {
     transition: background 0.14s ease;
 }
 
 .data-table tbody tr:hover {
-    background: #F8FBFF;
+    background: #F8FAFC;
 }
 
 .data-table tbody tr:last-child td {
@@ -137,7 +265,7 @@
     height: 34px;
     padding: 0 10px;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 7px;
     background: var(--white);
     display: inline-flex;
     align-items: center;
@@ -161,4 +289,34 @@
 .pagination a.disabled {
     pointer-events: none;
     opacity: 0.45;
+}
+
+@media (max-width: 700px) {
+    .data-table {
+        min-width: 760px;
+    }
+
+    .validation-results-table {
+        min-width: 0;
+    }
+
+    .failed-jobs-table {
+        min-width: 0;
+    }
+
+    .wide-table,
+    .comparison-results-table {
+        min-width: 980px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 11px;
+    }
+
+    .pagination {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
 }

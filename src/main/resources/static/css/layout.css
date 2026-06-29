@@ -6,7 +6,7 @@
 .sidebar {
     width: 240px;
     flex: 0 0 240px;
-    background: linear-gradient(180deg, #071B36 0%, #0B2345 55%, #08203E 100%);
+    background: #14213D;
     color: var(--white);
     display: flex;
     flex-direction: column;
@@ -46,18 +46,16 @@
 }
 
 .brand-mark {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background:
-            linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 38%),
-            linear-gradient(135deg, #123A63 0%, #1D4F86 54%, #2F6FA7 100%);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #1D5C96;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 900;
     color: var(--white);
-    box-shadow: 0 10px 22px rgba(3, 16, 33, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .brand-title {
@@ -137,10 +135,10 @@
     gap: 10px;
     height: 42px;
     padding: 0 14px;
-    border-radius: 10px;
+    border-radius: 8px;
     color: rgba(255, 255, 255, 0.76);
     font-weight: 700;
-    transition: all 0.16s ease;
+    transition: background-color 0.16s ease, color 0.16s ease;
 }
 
 .sidebar-sublink {
@@ -156,7 +154,7 @@
 }
 
 .sidebar-link.active {
-    box-shadow: inset 3px 0 0 #69B7FF;
+    box-shadow: inset 3px 0 0 #8EC5F4;
 }
 
 .nav-dot {
@@ -167,7 +165,7 @@
 }
 
 .sidebar-link.active .nav-dot {
-    background: #69B7FF;
+    background: #8EC5F4;
 }
 
 .sidebar-footer {
@@ -192,6 +190,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 14px;
     padding: 0 28px;
     position: sticky;
     top: 0;
@@ -202,7 +201,7 @@
     font-size: 20px;
     margin: 0 0 3px 0;
     color: var(--primary-navy);
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
 }
 
 .top-header p {
@@ -225,7 +224,7 @@
     padding: 0 12px 0 6px;
     border: 1px solid var(--border);
     border-radius: 999px;
-    background: #FBFCFE;
+    background: var(--surface-subtle);
     font-weight: 800;
     color: var(--primary-navy);
 }
@@ -247,7 +246,9 @@
 }
 
 .content {
-    padding: 26px 28px 10px;
+    width: 100%;
+    max-width: 1480px;
+    padding: 24px 28px 10px;
     flex: 1;
 }
 
@@ -259,9 +260,7 @@
 
 .login-body {
     min-height: 100vh;
-    background:
-            radial-gradient(circle at top left, rgba(0, 91, 172, 0.18), transparent 34%),
-            linear-gradient(135deg, #F5F7FA 0%, #EAF3FF 100%);
+    background: var(--background);
 }
 
 .login-shell {
@@ -274,7 +273,7 @@
     padding: 54px;
     display: flex;
     align-items: center;
-    background: linear-gradient(135deg, rgba(11, 35, 69, 0.96), rgba(0, 91, 172, 0.88));
+    background: #14213D;
     color: var(--white);
 }
 
@@ -291,14 +290,14 @@
     line-height: 1.25;
     margin-bottom: 18px;
     letter-spacing: 0;
-    white-space: nowrap;
+    max-width: 620px;
 }
 
 .login-visual p {
     color: rgba(255, 255, 255, 0.75);
     font-size: 16px;
     line-height: 1.75;
-    white-space: nowrap;
+    max-width: 620px;
 }
 
 .login-feature-list {
@@ -326,8 +325,8 @@
     max-width: 420px;
     background: var(--white);
     border: 1px solid var(--border);
-    border-radius: 22px;
-    box-shadow: 0 24px 60px rgba(11, 35, 69, 0.14);
+    border-radius: 14px;
+    box-shadow: var(--shadow-raised);
     padding: 34px;
 }
 
@@ -369,10 +368,36 @@
     max-width: 520px;
     background: var(--white);
     border: 1px solid var(--border);
-    border-radius: 20px;
+    border-radius: 14px;
     box-shadow: var(--shadow);
     padding: 34px;
     text-align: center;
+}
+
+.mobile-menu-button {
+    display: none;
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.mobile-menu-button span {
+    width: 16px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--primary-navy);
+}
+
+.mobile-scrim {
+    display: none;
 }
 
 .error-code {
@@ -382,7 +407,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #FDECEC;
+    background: #FCEDEA;
     color: var(--danger);
     font-weight: 900;
     font-size: 28px;
@@ -402,7 +427,7 @@
     margin: 20px 0;
     padding: 14px;
     border-radius: 12px;
-    background: #FBFCFE;
+    background: var(--surface-subtle);
     border: 1px solid var(--border);
     text-align: left;
     word-break: break-word;
@@ -426,7 +451,36 @@
 
 @media (max-width: 920px) {
     .sidebar {
-        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        display: flex;
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+        box-shadow: 18px 0 40px rgba(20, 33, 61, 0.22);
+    }
+
+    .sidebar-open .sidebar {
+        transform: translateX(0);
+    }
+
+    .mobile-scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 9;
+        background: rgba(20, 33, 61, 0.36);
+    }
+
+    .sidebar-open .mobile-scrim {
+        display: block;
+    }
+
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    .mobile-menu-button {
+        display: inline-flex;
     }
 
     .login-shell {
@@ -438,10 +492,45 @@
     }
 
     .top-header {
-        padding: 0 18px;
+        height: auto;
+        min-height: 64px;
+        padding: 12px 18px;
     }
 
     .content {
         padding: 18px;
+    }
+
+    .user-area {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 640px) {
+    .top-header {
+        align-items: flex-start;
+    }
+
+    .top-header p,
+    .user-chip {
+        display: none;
+    }
+
+    .top-header h1 {
+        padding-top: 8px;
+        font-size: 18px;
+    }
+
+    .logout-form .btn {
+        min-height: 38px;
+        padding: 0 11px;
+    }
+
+    .login-panel {
+        padding: 24px 18px;
+    }
+
+    .login-card {
+        padding: 26px 22px;
     }
 }
