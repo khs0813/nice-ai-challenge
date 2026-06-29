@@ -9,6 +9,8 @@ public class QueryComparisonSearchConditionDto {
     private String enabledYn;
     private String validationType;
     private String resultStatus;
+    private String riskLevel;
+    private String aiAnalysisStatus;
     private String requestedBy;
     private String startDate;
     private String endDate;
@@ -56,7 +58,26 @@ public class QueryComparisonSearchConditionDto {
     }
 
     public void setResultStatus(String resultStatus) {
-        this.resultStatus = trimToNull(resultStatus);
+        String trimmed = trimToNull(resultStatus);
+        this.resultStatus = trimmed == null ? null : trimmed.toUpperCase();
+    }
+
+    public String getRiskLevel() {
+        return riskLevel;
+    }
+
+    public void setRiskLevel(String riskLevel) {
+        String trimmed = trimToNull(riskLevel);
+        this.riskLevel = trimmed == null ? null : trimmed.toUpperCase();
+    }
+
+    public String getAiAnalysisStatus() {
+        return aiAnalysisStatus;
+    }
+
+    public void setAiAnalysisStatus(String aiAnalysisStatus) {
+        String trimmed = trimToNull(aiAnalysisStatus);
+        this.aiAnalysisStatus = trimmed == null ? null : trimmed.toUpperCase();
     }
 
     public String getRequestedBy() {

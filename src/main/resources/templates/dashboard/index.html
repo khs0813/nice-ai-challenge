@@ -4,40 +4,37 @@
 <div th:fragment="content">
     <section class="ai-hero">
         <div>
-            <p class="ai-eyebrow">OpenAI 기반 운영 리스크 예방</p>
-            <h2>정산 데이터 불일치를 자동 탐지하고 AI가 원인과 조치 방향을 요약합니다.</h2>
+            <p class="ai-eyebrow">AI 기반 운영 리스크 예방</p>
+            <h2>정산 데이터 불일치를 탐지하고, AI가 원인 후보와 조치 방향을 즉시 제안합니다.</h2>
         </div>
         <div class="ai-hero-summary">
-            <strong>오늘 검증 현황</strong>
-            <span th:text="${'전체 ' + aiOverview.totalValidationCount + '건 | 정상 ' + aiOverview.successCount + '건 | 불일치 ' + aiOverview.mismatchCount + '건 | HIGH ' + aiOverview.highRiskCount + '건 | AI 분석 ' + aiOverview.aiAnalyzedCount + '건'}">전체 24건 | 정상 21건 | 불일치 3건 | HIGH 1건 | AI 분석 12건</span>
+            <strong>오늘 AI 검증 신호</strong>
+            <div class="ai-hero-signal-grid">
+                <span><b th:text="${aiOverview.mismatchCount}">3</b>불일치</span>
+                <span><b th:text="${aiOverview.highRiskCount}">1</b>HIGH 위험</span>
+                <span><b th:text="${aiOverview.aiAnalyzedCount}">12</b>AI 분석</span>
+                <span><b th:text="${aiOverview.aiWarningSqlCount}">2</b>SQL 경고</span>
+            </div>
         </div>
     </section>
 
     <section class="ai-kpi-grid">
-        <article class="ai-kpi-card">
+        <a class="ai-kpi-card" th:href="@{/validation-results(startDate=${today}, endDate=${today})}">
             <span>전체 검증</span>
             <strong th:text="${aiOverview.totalValidationCount}">24</strong>
-        </article>
-        <article class="ai-kpi-card success">
-            <span>정상</span>
-            <strong th:text="${aiOverview.successCount}">21</strong>
-        </article>
-        <article class="ai-kpi-card warning">
-            <span>불일치</span>
+        </a>
+        <a class="ai-kpi-card warning" th:href="@{/validation-results(resultStatus='ISSUE', startDate=${today}, endDate=${today})}">
+            <span>불일치 탐지</span>
             <strong th:text="${aiOverview.mismatchCount}">3</strong>
-        </article>
-        <article class="ai-kpi-card danger">
+        </a>
+        <a class="ai-kpi-card danger" th:href="@{/query-comparison-results(riskLevel='HIGH')}">
             <span>위험도 HIGH</span>
             <strong th:text="${aiOverview.highRiskCount}">1</strong>
-        </article>
-        <article class="ai-kpi-card info">
+        </a>
+        <a class="ai-kpi-card info" th:href="@{/query-comparison-results(aiAnalysisStatus='SUCCESS')}">
             <span>AI 분석 완료</span>
             <strong th:text="${aiOverview.aiAnalyzedCount}">12</strong>
-        </article>
-        <article class="ai-kpi-card danger">
-            <span>AI 경고 SQL</span>
-            <strong th:text="${aiOverview.aiWarningSqlCount}">2</strong>
-        </article>
+        </a>
     </section>
 
     <section class="ai-feature-grid">
@@ -45,7 +42,7 @@
             <div class="section-header">
                 <div>
                     <h2>AI 불일치 요약</h2>
-                    <p th:text="${aiMismatchSummary.sample ? '최근 AI 요약이 없어 심사용 샘플을 표시합니다.' : '최근 불일치 결과의 AI 분석 요약입니다.'}">최근 불일치 결과의 AI 분석 요약입니다.</p>
+                    <p th:text="${aiMismatchSummary.sample ? '최근 탐지 사례 기반 AI 분석 예시입니다.' : '최근 불일치 결과의 AI 분석 요약입니다.'}">최근 불일치 결과의 AI 분석 요약입니다.</p>
                 </div>
                 <span class="severity-badge" th:classappend="${aiMismatchSummary.severityBadgeClass}" th:text="${aiMismatchSummary.severity}">HIGH</span>
             </div>
@@ -104,43 +101,51 @@
         </article>
     </section>
 
-    <section class="summary-grid">
-        <a class="summary-card" th:href="@{/dashboard/jobs(type='total')}">
-            <span class="summary-label">전체 배치 실행</span>
-            <strong th:text="${summary.totalJobCount}">0</strong>
-        </a>
-        <a class="summary-card" th:href="@{/dashboard/jobs(type='today')}">
-            <span class="summary-label">오늘 실행</span>
-            <strong th:text="${summary.todayJobCount}">0</strong>
-        </a>
-        <a class="summary-card success-card" th:href="@{/dashboard/jobs(type='completed')}">
-            <span class="summary-label">성공 배치</span>
-            <strong th:text="${summary.completedJobCount}">0</strong>
-        </a>
-        <a class="summary-card danger-card" th:href="@{/dashboard/jobs(type='failed')}">
-            <span class="summary-label">실패 배치</span>
-            <strong th:text="${summary.failedJobCount}">0</strong>
-        </a>
-        <a class="summary-card info-card" th:href="@{/dashboard/jobs(type='running')}">
-            <span class="summary-label">실행 중 배치</span>
-            <strong th:text="${summary.runningJobCount}">0</strong>
-        </a>
-        <a class="summary-card warning-card" th:href="@{/dashboard/jobs(type='recent-failed')}">
-            <span class="summary-label">최근 7일 실패 배치</span>
-            <strong th:text="${summary.recentFailedJobCount}">0</strong>
-        </a>
-        <a class="summary-card success-card" th:href="@{/validation-results(resultStatus='SUCCESS')}">
-            <span class="summary-label">검증 성공</span>
-            <strong th:text="${summary.queryCompareSuccessCount}">0</strong>
-        </a>
-        <a class="summary-card danger-card" th:href="@{/validation-results(resultStatus='FAIL')}">
-            <span class="summary-label">검증 실패</span>
-            <strong th:text="${summary.queryCompareFailCount}">0</strong>
-        </a>
-        <article class="summary-card">
-            <span class="summary-label">평균 실행 시간</span>
-            <strong th:text="${summary.averageDurationText}">-</strong>
-        </article>
+    <section class="dashboard-support-section">
+        <div class="section-header compact-header">
+            <div>
+                <h2>운영 근거 지표</h2>
+                <p>AI 판단과 함께 확인하는 배치 실행 및 검증 처리 현황입니다.</p>
+            </div>
+        </div>
+        <div class="summary-grid ops-summary-grid">
+            <a class="summary-card" th:href="@{/dashboard/jobs(type='total')}">
+                <span class="summary-label">전체 배치 실행</span>
+                <strong th:text="${summary.totalJobCount}">0</strong>
+            </a>
+            <a class="summary-card" th:href="@{/dashboard/jobs(type='today')}">
+                <span class="summary-label">오늘 실행</span>
+                <strong th:text="${summary.todayJobCount}">0</strong>
+            </a>
+            <a class="summary-card success-card" th:href="@{/dashboard/jobs(type='completed')}">
+                <span class="summary-label">성공 배치</span>
+                <strong th:text="${summary.completedJobCount}">0</strong>
+            </a>
+            <a class="summary-card danger-card" th:href="@{/dashboard/jobs(type='failed')}">
+                <span class="summary-label">실패 배치</span>
+                <strong th:text="${summary.failedJobCount}">0</strong>
+            </a>
+            <a class="summary-card info-card" th:href="@{/dashboard/jobs(type='running')}">
+                <span class="summary-label">실행 중 배치</span>
+                <strong th:text="${summary.runningJobCount}">0</strong>
+            </a>
+            <a class="summary-card warning-card" th:href="@{/dashboard/jobs(type='recent-failed')}">
+                <span class="summary-label">최근 7일 실패 배치</span>
+                <strong th:text="${summary.recentFailedJobCount}">0</strong>
+            </a>
+            <a class="summary-card success-card" th:href="@{/validation-results(resultStatus='SUCCESS')}">
+                <span class="summary-label">검증 성공</span>
+                <strong th:text="${summary.queryCompareSuccessCount}">0</strong>
+            </a>
+            <a class="summary-card danger-card" th:href="@{/validation-results(resultStatus='FAIL')}">
+                <span class="summary-label">검증 실패</span>
+                <strong th:text="${summary.queryCompareFailCount}">0</strong>
+            </a>
+            <article class="summary-card">
+                <span class="summary-label">평균 실행 시간</span>
+                <strong th:text="${summary.averageDurationText}">-</strong>
+            </article>
+        </div>
     </section>
 
     <section class="dashboard-chart-grid">
@@ -226,28 +231,22 @@
             <a class="btn btn-primary btn-sm" th:href="@{/query-comparison-results}">전체 보기</a>
         </div>
         <div class="table-responsive">
-            <table class="data-table wide-table">
+            <table class="data-table comparison-compact-table">
                 <thead>
                 <tr>
                     <th>결과 번호</th>
-                    <th>검증 번호</th>
                     <th>비교명</th>
                     <th>결과</th>
                     <th>위험도</th>
-                    <th>AI 요약</th>
                     <th>AI 분석 상태</th>
-                    <th>요청자</th>
                     <th>요청일시</th>
-                    <th>수행 시간</th>
-                    <th>Sybase 건수</th>
-                    <th>Oracle 건수</th>
+                    <th>비교 건수</th>
                     <th>비교 메시지</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="result : ${recentQueryResults}">
                     <td><a th:href="@{/query-comparison-results/{id}(id=${result.resultId})}" th:text="${result.resultId}">1</a></td>
-                    <td th:text="${result.comparisonId}">10</td>
                     <td class="text-strong" th:text="${result.comparisonName}">정산 비교</td>
                     <td>
                         <a th:href="@{/query-comparison-results(resultStatus=${result.resultStatus}, comparisonId=${result.comparisonId})}">
@@ -255,19 +254,20 @@
                         </a>
                     </td>
                     <td><span class="severity-badge compact" th:classappend="${result.riskBadgeClass}" th:text="${result.riskLevel}">LOW</span></td>
-                    <td th:text="${result.aiSummary ? '있음' : '없음'}">완료</td>
                     <td><span class="status-badge" th:classappend="${result.aiAnalysisStatusBadgeClass}" th:text="${result.aiAnalysisStatusShortLabel}">완료</span></td>
-                    <td th:text="${result.requestedBy}">admin</td>
                     <td th:text="${result.requestedAtText}">-</td>
-                    <td th:text="${result.durationText}">-</td>
-                    <td th:text="${result.sybaseRowCount != null ? result.sybaseRowCount : '-'}">0</td>
-                    <td th:text="${result.oracleRowCount != null ? result.oracleRowCount : '-'}">0</td>
+                    <td>
+                        <div class="count-pair">
+                            <span>Sybase <b th:text="${result.sybaseRowCount != null ? result.sybaseRowCount : '-'}">0</b></span>
+                            <span>Oracle <b th:text="${result.oracleRowCount != null ? result.oracleRowCount : '-'}">0</b></span>
+                        </div>
+                    </td>
                     <td class="message-cell">
                         <a th:href="@{/query-comparison-results/{id}(id=${result.resultId})}" th:text="${result.messageSummary}">-</a>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(recentQueryResults)}">
-                    <td colspan="13" class="empty-cell">최근 AI 요약이 없습니다. 검증 실행 후 AI 불일치 요약과 위험도가 표시됩니다.</td>
+                    <td colspan="8" class="empty-cell">최근 AI 요약이 없습니다. 검증 실행 후 AI 불일치 요약과 위험도가 표시됩니다.</td>
                 </tr>
                 </tbody>
             </table>

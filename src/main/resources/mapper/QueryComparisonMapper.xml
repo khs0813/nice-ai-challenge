@@ -260,8 +260,52 @@
         <if test="comparisonName != null and comparisonName != ''">
             AND c.COMPARISON_NAME LIKE '%' || #{comparisonName} || '%'
         </if>
-        <if test="resultStatus != null and resultStatus != ''">
+        <if test="resultStatus != null and resultStatus == 'ISSUE'">
+            AND r.RESULT_STATUS IN ('FAIL', 'ERROR')
+        </if>
+        <if test="resultStatus != null and resultStatus != '' and resultStatus != 'ISSUE'">
             AND r.RESULT_STATUS = #{resultStatus}
+        </if>
+        <if test="riskLevel != null and riskLevel == 'HIGH'">
+            AND (
+                r.RESULT_STATUS = 'ERROR'
+                OR (
+                    r.SYBASE_ROW_COUNT IS NOT NULL
+                    AND r.ORACLE_ROW_COUNT IS NOT NULL
+                    AND ABS(r.SYBASE_ROW_COUNT - r.ORACLE_ROW_COUNT) &gt;= 5
+                )
+            )
+        </if>
+        <if test="riskLevel != null and riskLevel == 'MEDIUM'">
+            AND r.RESULT_STATUS != 'ERROR'
+            AND (
+                (
+                    r.SYBASE_ROW_COUNT IS NOT NULL
+                    AND r.ORACLE_ROW_COUNT IS NOT NULL
+                    AND ABS(r.SYBASE_ROW_COUNT - r.ORACLE_ROW_COUNT) &gt; 0
+                    AND ABS(r.SYBASE_ROW_COUNT - r.ORACLE_ROW_COUNT) &lt; 5
+                )
+                OR (
+                    r.RESULT_STATUS = 'FAIL'
+                    AND (
+                        r.SYBASE_ROW_COUNT IS NULL
+                        OR r.ORACLE_ROW_COUNT IS NULL
+                        OR ABS(r.SYBASE_ROW_COUNT - r.ORACLE_ROW_COUNT) &lt; 5
+                    )
+                )
+            )
+        </if>
+        <if test="riskLevel != null and riskLevel == 'LOW'">
+            AND r.RESULT_STATUS != 'ERROR'
+            AND r.RESULT_STATUS != 'FAIL'
+            AND (
+                r.SYBASE_ROW_COUNT IS NULL
+                OR r.ORACLE_ROW_COUNT IS NULL
+                OR ABS(r.SYBASE_ROW_COUNT - r.ORACLE_ROW_COUNT) = 0
+            )
+        </if>
+        <if test="aiAnalysisStatus != null and aiAnalysisStatus != ''">
+            AND r.AI_ANALYSIS_STATUS = #{aiAnalysisStatus}
         </if>
         <if test="requestedBy != null and requestedBy != ''">
             AND r.REQUESTED_BY = #{requestedBy}

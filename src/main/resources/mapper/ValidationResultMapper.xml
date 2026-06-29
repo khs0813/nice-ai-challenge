@@ -14,7 +14,10 @@
         <if test="comparisonName != null and comparisonName != ''">
             AND v.RULE_NAME LIKE '%' || #{comparisonName} || '%'
         </if>
-        <if test="resultStatus != null and resultStatus != ''">
+        <if test="resultStatus != null and resultStatus == 'ISSUE'">
+            AND v.RESULT_STATUS IN ('FAIL', 'ERROR')
+        </if>
+        <if test="resultStatus != null and resultStatus != '' and resultStatus != 'ISSUE'">
             AND v.RESULT_STATUS = #{resultStatus}
         </if>
         <if test="requestedBy != null and requestedBy != ''">

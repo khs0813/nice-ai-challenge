@@ -42,7 +42,7 @@ INSERT INTO BATCH_JOB_EXECUTION (
 ) VALUES (
     104, 1, 4, SYSTIMESTAMP - INTERVAL '2' HOUR - INTERVAL '10' MINUTE, SYSTIMESTAMP - INTERVAL '2' HOUR - INTERVAL '9' MINUTE,
     SYSTIMESTAMP - INTERVAL '2' HOUR - INTERVAL '1' MINUTE, 'FAILED', 'FAILED',
-    'Oracle reflect count is lower than Sybase source count. source=1250, reflected=1248',
+    'Oracle reflect count is lower than Sybase source count. source=1250, reflected=1244',
     SYSTIMESTAMP - INTERVAL '2' HOUR - INTERVAL '1' MINUTE
 );
 
@@ -93,8 +93,8 @@ INSERT INTO BATCH_STEP_EXECUTION (
 ) VALUES (
     1003, 1, 'reflectCustomerToOracleStep', 104, SYSTIMESTAMP - INTERVAL '2' HOUR - INTERVAL '9' MINUTE,
     SYSTIMESTAMP - INTERVAL '2' HOUR - INTERVAL '1' MINUTE, 'FAILED',
-    3, 1250, 0, 1248, 'FAILED', 'Two customer rows were not reflected to Oracle target',
-    0, 2, 0, 1, SYSTIMESTAMP - INTERVAL '2' HOUR - INTERVAL '1' MINUTE
+    3, 1250, 0, 1244, 'FAILED', 'Six customer rows were not reflected to Oracle target',
+    0, 6, 0, 1, SYSTIMESTAMP - INTERVAL '2' HOUR - INTERVAL '1' MINUTE
 );
 
 INSERT INTO SETTLEMENT (BUSINESS_DATE, AMOUNT) VALUES ('2026-05-30', 10000);
@@ -159,8 +159,8 @@ INSERT INTO BM_QUERY_COMPARISON_RESULT (
     SYBASE_ROW_COUNT, ORACLE_ROW_COUNT, SYBASE_RESULT_HASH, ORACLE_RESULT_HASH, MISMATCH_SUMMARY, ERROR_MESSAGE,
     ORACLE_BATCH_CONTEXT, AI_ANALYSIS_STATUS, AI_ANALYSIS, AI_ACTION_GUIDE
 ) VALUES (
-    900, 1, 'admin', SYSTIMESTAMP - INTERVAL '5' DAY, SYSTIMESTAMP - INTERVAL '5' DAY,
-    SYSTIMESTAMP - INTERVAL '5' DAY + INTERVAL '10' SECOND, 'SUCCESS',
+    900, 1, 'admin', SYSTIMESTAMP - INTERVAL '5' HOUR, SYSTIMESTAMP - INTERVAL '5' HOUR,
+    SYSTIMESTAMP - INTERVAL '5' HOUR + INTERVAL '10' SECOND, 'SUCCESS',
     2, 2, 'a1b2c3', 'a1b2c3', '두 쿼리 결과가 일치합니다.', NULL,
     NULL, 'SKIPPED', NULL, NULL
 );
@@ -170,13 +170,13 @@ INSERT INTO BM_QUERY_COMPARISON_RESULT (
     SYBASE_ROW_COUNT, ORACLE_ROW_COUNT, SYBASE_RESULT_HASH, ORACLE_RESULT_HASH, MISMATCH_SUMMARY, ERROR_MESSAGE,
     ORACLE_BATCH_CONTEXT, AI_ANALYSIS_STATUS, AI_ANALYSIS, AI_ACTION_GUIDE
 ) VALUES (
-    901, 2, 'admin', SYSTIMESTAMP - INTERVAL '3' DAY, SYSTIMESTAMP - INTERVAL '3' DAY,
-    SYSTIMESTAMP - INTERVAL '3' DAY + INTERVAL '7' SECOND, 'FAIL',
-    1250, 1248, 'hash-sybase', 'hash-oracle', 'row count differs: Sybase=1250, Oracle=1248', NULL,
-    'JOB_EXECUTION_ID=104, JOB_NAME=oracleReflectJob, STATUS=FAILED, EXIT_CODE=FAILED, START_TIME=2026-06-24 10:11:00, END_TIME=2026-06-24 10:19:00, EXIT_MESSAGE=Oracle reflect count is lower than Sybase source count. source=1250, reflected=1248',
+    901, 2, 'admin', SYSTIMESTAMP - INTERVAL '2' HOUR, SYSTIMESTAMP - INTERVAL '2' HOUR,
+    SYSTIMESTAMP - INTERVAL '2' HOUR + INTERVAL '7' SECOND, 'FAIL',
+    1250, 1244, 'hash-sybase', 'hash-oracle', 'row count differs: Sybase=1250, Oracle=1244', NULL,
+    'JOB_EXECUTION_ID=104, JOB_NAME=oracleReflectJob, STATUS=FAILED, EXIT_CODE=FAILED, START_TIME=최근 실행, END_TIME=최근 실행, EXIT_MESSAGE=Oracle reflect count is lower than Sybase source count. source=1250, reflected=1244',
     'SUCCESS',
-    '원인 후보 - **Oracle 반영 누락 가능성**: 동일 시간대 `oracleReflectJob`이 실패했고 reflected 건수가 1248로 비교 결과와 일치합니다. - **필터 조건 차이 가능성**: `use_yn` 값의 공백/NULL 처리 기준이 DB 간 다르면 사용 고객 건수가 달라질 수 있습니다. 점검 순서 - 배치 로그에서 write skip 2건의 원인을 확인합니다. - 동일 시간대 재처리 여부와 Oracle 대상 테이블 반영 시간을 확인합니다. 조치 가이드 - 누락 2건의 키를 배치 로그에서 확인한 뒤 Oracle 재반영 또는 보정 배치를 수행합니다.',
-    '조치 가이드 - 배치 로그에서 write skip 2건의 고객 키를 확인합니다. - Oracle 대상 테이블에 누락 키가 존재하는지 조회합니다. - 재처리 후 이 검증을 다시 실행합니다.'
+    '원인 후보 - **Oracle 반영 누락 가능성**: 동일 시간대 `oracleReflectJob`이 실패했고 reflected 건수가 1244로 비교 결과와 일치합니다. - **필터 조건 차이 가능성**: `use_yn` 값의 공백/NULL 처리 기준이 DB 간 다르면 사용 고객 건수가 달라질 수 있습니다. 점검 순서 - 배치 로그에서 write skip 6건의 원인을 확인합니다. - 동일 시간대 재처리 여부와 Oracle 대상 테이블 반영 시간을 확인합니다. 조치 가이드 - 누락 6건의 키를 배치 로그에서 확인한 뒤 Oracle 재반영 또는 보정 배치를 수행합니다.',
+    '조치 가이드 - 배치 로그에서 write skip 6건의 고객 키를 확인합니다. - Oracle 대상 테이블에 누락 키가 존재하는지 조회합니다. - 재처리 후 이 검증을 다시 실행합니다.'
 );
 
 INSERT INTO BM_QUERY_COMPARISON_RESULT (
@@ -186,7 +186,7 @@ INSERT INTO BM_QUERY_COMPARISON_RESULT (
 ) VALUES (
     902, 3, 'admin', SYSTIMESTAMP - INTERVAL '1' DAY, SYSTIMESTAMP - INTERVAL '1' DAY,
     SYSTIMESTAMP - INTERVAL '1' DAY + INTERVAL '4' SECOND, 'FAIL',
-    2, 2, 'hash-active', 'hash-inactive', 'row 1 differs. Sybase=[CNT=2|], Oracle=[CNT=2|]', NULL,
+    2, 2, 'hash-active', 'hash-inactive', '결과 건수는 같지만 Sybase와 Oracle의 필터 조건이 달라 비교 의미가 일치하지 않습니다.', NULL,
     '동일 시간대 Oracle 배치 실패 이력이 조회되지 않았습니다.',
     'SUCCESS',
     '원인 후보 - **SQL 조건 불일치**: Sybase는 사용 고객, Oracle은 미사용 고객을 집계하고 있어 결과 의미가 다릅니다. 점검 순서 - 비교 목적이 사용 고객인지 미사용 고객인지 확인합니다. - 양쪽 SQL의 `use_yn` 조건을 동일하게 맞춥니다. 조치 가이드 - Oracle SQL 조건을 `use_yn = ''Y''`로 수정한 뒤 저장 전 SQL 검토를 다시 실행합니다.',
@@ -297,8 +297,8 @@ INSERT INTO BM_QUERY_EXPECTATION_RESULT (
     RESULT_STATUS, ACTUAL_ROW_COUNT, ACTUAL_VALUE, ACTUAL_RESULT_HASH,
     EXPECTED_VALUE, MISMATCH_SUMMARY, ERROR_MESSAGE
 ) VALUES (
-    1902, 12, 'scheduler', SYSTIMESTAMP - INTERVAL '2' DAY,
-    SYSTIMESTAMP - INTERVAL '2' DAY, SYSTIMESTAMP - INTERVAL '2' DAY + INTERVAL '2' SECOND,
+    1902, 12, 'scheduler', SYSTIMESTAMP - INTERVAL '70' MINUTE,
+    SYSTIMESTAMP - INTERVAL '70' MINUTE, SYSTIMESTAMP - INTERVAL '70' MINUTE + INTERVAL '2' SECOND,
     'SUCCESS', 1, '35000', 'settlement-threshold-hash', '30000',
     '실제값이 기대값과 일치합니다.', NULL
 );
@@ -320,8 +320,8 @@ INSERT INTO BM_VALIDATION_NOTIFICATION (
 ) VALUES (
     2900, 'PAIR', 2, 901, 'FAIL',
     '[FAIL] 고객 마스터 건수 검증',
-    'row count differs: Sybase=1250, Oracle=1248',
-    'customer-team@example.com', 'N', SYSTIMESTAMP - INTERVAL '2' HOUR
+    'row count differs: Sybase=1250, Oracle=1244',
+    'customer-team@example.com', 'N', SYSTIMESTAMP - INTERVAL '115' MINUTE
 );
 
 INSERT INTO BM_VALIDATION_NOTIFICATION (

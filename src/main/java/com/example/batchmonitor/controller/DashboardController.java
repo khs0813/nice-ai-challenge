@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -38,6 +39,7 @@ public class DashboardController {
         model.addAttribute("validationTypeSummary", dashboardService.getValidationTypeSummary());
         model.addAttribute("recentJobs", dashboardService.getRecentJobExecutions());
         model.addAttribute("recentQueryResults", dashboardService.getRecentQueryComparisonResults());
+        model.addAttribute("today", LocalDate.now().toString());
         return "dashboard/index";
     }
 

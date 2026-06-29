@@ -26,6 +26,7 @@
                     <label for="resultStatus">결과</label>
                     <select id="resultStatus" name="resultStatus">
                         <option value="">전체</option>
+                        <option value="ISSUE" th:selected="${condition.resultStatus == 'ISSUE'}">불일치/오류</option>
                         <option value="SUCCESS" th:selected="${condition.resultStatus == 'SUCCESS'}">성공</option>
                         <option value="FAIL" th:selected="${condition.resultStatus == 'FAIL'}">불일치</option>
                         <option value="ERROR" th:selected="${condition.resultStatus == 'ERROR'}">오류</option>
