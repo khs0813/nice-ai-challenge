@@ -247,9 +247,10 @@
 
 .content {
     width: 100%;
-    max-width: 1480px;
+    max-width: none;
     padding: 24px 28px 10px;
     flex: 1;
+    overflow-x: hidden;
 }
 
 .footer {

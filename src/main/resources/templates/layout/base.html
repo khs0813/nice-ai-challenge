@@ -93,7 +93,7 @@
             </div>
         </header>
 
-        <main class="content">
+        <main class="content" th:classappend="${activeMenu == 'dashboard'} ? ' dashboard-content' : ''">
             <div th:replace="${content}"></div>
         </main>
 
