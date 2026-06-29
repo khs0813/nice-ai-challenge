@@ -342,6 +342,12 @@
     margin-bottom: 24px;
 }
 
+.login-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .login-help {
     text-align: center;
     color: var(--text-sub);
