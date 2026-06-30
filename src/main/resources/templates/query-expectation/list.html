@@ -138,7 +138,11 @@
                 <pre class="pre-message markdown-source" data-render-markdown th:text="${expectation.aiSqlReviewSummary}">review</pre>
             </div>
             <div class="search-actions">
-                <button type="submit" class="btn btn-primary" th:text="${expectation.expectationId == null ? '등록' : '수정'}">등록</button>
+                <button type="submit"
+                        class="btn btn-primary"
+                        data-submit-loading
+                        data-loading-label="AI 검토 중"
+                        th:text="${expectation.expectationId == null ? '등록' : '수정'}">등록</button>
                 <a th:href="@{/query-expectations}" class="btn btn-secondary">초기화</a>
             </div>
         </form>

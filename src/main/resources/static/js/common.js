@@ -32,6 +32,50 @@
         target.value = checkbox.checked ? 'Y' : 'N';
     }
 
+    function isAiSupportedSubmit(form) {
+        return Array.prototype.some.call(form.querySelectorAll('#aiSqlReviewYn, #aiAnalysisEnabledYn'), function (input) {
+            return input.value === 'Y';
+        });
+    }
+
+    function setSubmitLoading(form) {
+        var button = form.querySelector('[data-submit-loading]');
+        if (!button) {
+            return;
+        }
+        var defaultLabel = button.textContent.trim() || '처리 중';
+        var loadingLabel = isAiSupportedSubmit(form)
+                ? (button.getAttribute('data-loading-label') || 'AI 검토 중')
+                : '저장 중';
+        button.disabled = true;
+        showPageLoading(loadingLabel);
+    }
+
+    function showPageLoading(label) {
+        if (document.querySelector('.page-loading-overlay')) {
+            return;
+        }
+        var overlay = document.createElement('div');
+        overlay.className = 'page-loading-overlay';
+        overlay.setAttribute('role', 'status');
+        overlay.setAttribute('aria-live', 'polite');
+
+        var panel = document.createElement('div');
+        panel.className = 'page-loading-panel';
+
+        var spinner = document.createElement('span');
+        spinner.className = 'page-loading-spinner';
+        spinner.setAttribute('aria-hidden', 'true');
+
+        var text = document.createElement('strong');
+        text.textContent = label || '처리 중';
+
+        panel.appendChild(spinner);
+        panel.appendChild(text);
+        overlay.appendChild(panel);
+        document.body.appendChild(overlay);
+    }
+
     function appendInlineTokens(parent, text) {
         var pattern = /(\*\*[^*]+\*\*|`[^`]+`)/g;
         var lastIndex = 0;
@@ -252,6 +296,10 @@
         if (checkbox) {
             syncCheckbox(checkbox);
         }
+    });
+
+    document.addEventListener('submit', function (event) {
+        setSubmitLoading(event.target);
     });
 
     document.addEventListener('keydown', function (event) {
